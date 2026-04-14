@@ -1,0 +1,2592 @@
+{
+  "version": "1.0",
+  "total": 235,
+  "generated": "2026-04-14",
+  "functions": [
+    {
+      "name": "getgenv",
+      "aliases": [
+        "get_global_env"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns the executor's global environment table that persists across all executed scripts.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Synapse X, Sentinel, Krnl, Hydrogen"
+    },
+    {
+      "name": "getrenv",
+      "aliases": [
+        "get_roblox_env"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns the global environment table for the Roblox game context.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Synapse X, Sentinel, Krnl"
+    },
+    {
+      "name": "getreg",
+      "aliases": [
+        "get_registry"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns the Lua registry table containing all Lua objects.",
+      "verified_source": "UNC, Sentinel, Synapse X, Hydrogen"
+    },
+    {
+      "name": "getgc",
+      "aliases": [
+        "get_gc_objects",
+        "get_gc"
+      ],
+      "category": "environment",
+      "parameters": "boolean? include_tables",
+      "returns": "table",
+      "description": "Returns a table of all objects tracked by Lua's garbage collector.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel, Synapse X, Krnl"
+    },
+    {
+      "name": "getsenv",
+      "aliases": [
+        "get_script_env"
+      ],
+      "category": "environment",
+      "parameters": "Instance script",
+      "returns": "table",
+      "description": "Returns the global environment table of a specific LocalScript or ModuleScript.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel, Synapse X"
+    },
+    {
+      "name": "getmenv",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "Instance script",
+      "returns": "table",
+      "description": "Returns the module environment of a script, similar to getsenv but for module context.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "gettenv",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "thread? t",
+      "returns": "table",
+      "description": "Returns a thread's environment table; if no thread is provided, uses the current thread.",
+      "verified_source": "Elysian (Executor-API-Docs), Hydrogen"
+    },
+    {
+      "name": "getcallingscript",
+      "aliases": [
+        "get_calling_script"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "LocalScript | ModuleScript | nil",
+      "description": "Returns the script that called the current function, or nil if called from the executor.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel, Synapse X"
+    },
+    {
+      "name": "getscriptclosure",
+      "aliases": [
+        "getscriptfunction"
+      ],
+      "category": "environment",
+      "parameters": "Instance script",
+      "returns": "function",
+      "description": "Returns a recreated closure for the given script's source code.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "getscriptbytecode",
+      "aliases": [
+        "dumpstring"
+      ],
+      "category": "environment",
+      "parameters": "Instance script",
+      "returns": "string",
+      "description": "Dumps the bytecode of a script as a binary string.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Krnl"
+    },
+    {
+      "name": "getscripthash",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "Instance script",
+      "returns": "string",
+      "description": "Returns a unique hash string representing the script's current source code.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Krnl"
+    },
+    {
+      "name": "getinstances",
+      "aliases": [
+        "get_all_instances"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns a table of all Instance objects currently in the game hierarchy.",
+      "verified_source": "UNC, Synapse X, Hydrogen"
+    },
+    {
+      "name": "getnilinstances",
+      "aliases": [
+        "get_nil_instances"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns a table of all Instance objects parented to nil.",
+      "verified_source": "UNC, Synapse X, Sentinel, Krnl"
+    },
+    {
+      "name": "getrunningscripts",
+      "aliases": [
+        "get_running_scripts"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns a table of all currently running LocalScript and ModuleScript instances.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Synapse X, Sentinel"
+    },
+    {
+      "name": "getscripts",
+      "aliases": [
+        "get_all_scripts"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns a table of all script instances (LocalScript and ModuleScript) in the game.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Synapse X"
+    },
+    {
+      "name": "getloadedmodules",
+      "aliases": [
+        "get_loaded_modules"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns a table of all ModuleScript instances that have been required/loaded.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Synapse X, Sentinel"
+    },
+    {
+      "name": "identifyexecutor",
+      "aliases": [
+        "getexecutorname"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "string, number",
+      "description": "Returns the name and version number of the current executor.",
+      "verified_source": "UNC, Krnl, Hydrogen"
+    },
+    {
+      "name": "loadstring",
+      "aliases": [
+        "load_string"
+      ],
+      "category": "environment",
+      "parameters": "string source, string? chunkname",
+      "returns": "function?, string?",
+      "description": "Compiles a string of Lua source code into a function; returns the function and any error message.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel, Synapse X"
+    },
+    {
+      "name": "loadfile",
+      "aliases": [
+        "load_file"
+      ],
+      "category": "environment",
+      "parameters": "string filename",
+      "returns": "function?, string?",
+      "description": "Loads and compiles a Lua file from the workspace folder into a function.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "isluau",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "boolean",
+      "description": "Returns true if the game is using the Luau VM (always true for modern Roblox).",
+      "verified_source": "Sentinel, Elysian (Executor-API-Docs)"
+    },
+    {
+      "name": "decompile",
+      "aliases": [
+        "decomp"
+      ],
+      "category": "environment",
+      "parameters": "Instance script, boolean? bytecode",
+      "returns": "string",
+      "description": "Decompiles a script and returns its source code as a string, or bytecode if specified.",
+      "verified_source": "Synapse X, Krnl, Hydrogen"
+    },
+    {
+      "name": "setfflag",
+      "aliases": [
+        "set_fast_flag"
+      ],
+      "category": "environment",
+      "parameters": "string flag, string value",
+      "returns": "void",
+      "description": "Sets a Roblox FastFlag to a specified value at runtime.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "gethui",
+      "aliases": [
+        "get_hidden_ui"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "Instance",
+      "description": "Returns a hidden Instance parented to nil that can be used to store GUI objects.",
+      "verified_source": "Hydrogen, Krnl"
+    },
+    {
+      "name": "getcustomasset",
+      "aliases": [
+        "get_custom_asset"
+      ],
+      "category": "environment",
+      "parameters": "string filepath",
+      "returns": "string",
+      "description": "Returns a rbxasset:// URL for a file in the workspace folder that can be used in-game.",
+      "verified_source": "Hydrogen, Fluxus"
+    },
+    {
+      "name": "isexecutorclosure",
+      "aliases": [
+        "checkclosure",
+        "isourclosure",
+        "is_synapse_function",
+        "is_executor_closure"
+      ],
+      "category": "environment",
+      "parameters": "function fn",
+      "returns": "boolean",
+      "description": "Returns true if the given function originates from the executor environment.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Hydrogen"
+    },
+    {
+      "name": "clonefunction",
+      "aliases": [
+        "clonefunc",
+        "clone_closure"
+      ],
+      "category": "environment",
+      "parameters": "function fn",
+      "returns": "function",
+      "description": "Creates a duplicate copy of a function that behaves identically but is a different reference.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Hydrogen"
+    },
+    {
+      "name": "newcclosure",
+      "aliases": [
+        "new_c_closure"
+      ],
+      "category": "closure",
+      "parameters": "function luau_closure",
+      "returns": "function",
+      "description": "Wraps a Luau closure in a C closure, used for hooking metamethods on Roblox userdata.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel, Synapse X"
+    },
+    {
+      "name": "iscclosure",
+      "aliases": [
+        "is_c_closure"
+      ],
+      "category": "closure",
+      "parameters": "function fn",
+      "returns": "boolean",
+      "description": "Returns true if the given function is a C closure.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "islclosure",
+      "aliases": [
+        "is_lua_closure",
+        "is_l_closure"
+      ],
+      "category": "closure",
+      "parameters": "function fn",
+      "returns": "boolean",
+      "description": "Returns true if the given function is a Luau (Lua) closure.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel, Synapse X"
+    },
+    {
+      "name": "checkcaller",
+      "aliases": [
+        "is_synapse_thread",
+        "issynapsethread"
+      ],
+      "category": "closure",
+      "parameters": "void",
+      "returns": "boolean",
+      "description": "Returns true if the current thread/call originates from the executor.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "hookfunction",
+      "aliases": [
+        "replaceclosure",
+        "replacefunction",
+        "hookfunc"
+      ],
+      "category": "closure",
+      "parameters": "function target, function hook",
+      "returns": "function",
+      "description": "Replaces the target function with the hook and returns the original function reference.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel, Synapse X"
+    },
+    {
+      "name": "cloneref",
+      "aliases": [
+        "clone_ref"
+      ],
+      "category": "instance",
+      "parameters": "Instance ref",
+      "returns": "Instance",
+      "description": "Creates a reference clone of an Instance that compares unequal but points to the same object.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Elysian (Executor-API-Docs)"
+    },
+    {
+      "name": "compareinstances",
+      "aliases": [
+        "compare_instances"
+      ],
+      "category": "instance",
+      "parameters": "Instance a, Instance b",
+      "returns": "boolean",
+      "description": "Compares two Instance references for equality, ignoring cloneref wrapping.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "getrawmetatable",
+      "aliases": [
+        "get_raw_metatable"
+      ],
+      "category": "instance",
+      "parameters": "table | userdata obj",
+      "returns": "table | nil",
+      "description": "Returns the metatable of an object without invoking the __metatable metamethod.",
+      "verified_source": "UNC, Sentinel, Synapse X"
+    },
+    {
+      "name": "setrawmetatable",
+      "aliases": [
+        "set_raw_metatable"
+      ],
+      "category": "instance",
+      "parameters": "table | userdata obj, table mt",
+      "returns": "boolean",
+      "description": "Sets the metatable of an object directly, bypassing the __metatable metamethod.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "hookmetamethod",
+      "aliases": [
+        "hook_meta_method",
+        "hookmetamethod"
+      ],
+      "category": "instance",
+      "parameters": "object obj, string metamethod, function hook",
+      "returns": "function",
+      "description": "Hooks a metamethod on an object and returns the original metamethod function.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "isreadonly",
+      "aliases": [
+        "is_read_only"
+      ],
+      "category": "instance",
+      "parameters": "table t",
+      "returns": "boolean",
+      "description": "Returns true if the given table is set to read-only mode.",
+      "verified_source": "UNC, Sentinel"
+    },
+    {
+      "name": "setreadonly",
+      "aliases": [
+        "set_read_only",
+        "make_writeable"
+      ],
+      "category": "instance",
+      "parameters": "table t, boolean readonly",
+      "returns": "void",
+      "description": "Sets whether a table is read-only or writable.",
+      "verified_source": "UNC, Sentinel"
+    },
+    {
+      "name": "gethiddenproperty",
+      "aliases": [
+        "get_hidden_property"
+      ],
+      "category": "instance",
+      "parameters": "Instance instance, string property",
+      "returns": "any",
+      "description": "Gets the value of a hidden property on an Instance that is not normally accessible.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "sethiddenproperty",
+      "aliases": [
+        "set_hidden_property"
+      ],
+      "category": "instance",
+      "parameters": "Instance instance, string property, any value",
+      "returns": "void",
+      "description": "Sets the value of a hidden property on an Instance.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "getscriptable",
+      "aliases": [],
+      "category": "instance",
+      "parameters": "Instance instance, string property",
+      "returns": "boolean",
+      "description": "Returns whether a property on an Instance is accessible from scripts.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "setscriptable",
+      "aliases": [],
+      "category": "instance",
+      "parameters": "Instance instance, string property, boolean scriptable",
+      "returns": "void",
+      "description": "Sets whether a property on an Instance can be accessed from scripts.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "getnamecallmethod",
+      "aliases": [
+        "get_namecall_method"
+      ],
+      "category": "instance",
+      "parameters": "void",
+      "returns": "string",
+      "description": "Returns the name of the method being called in a __namecall metamethod context.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "setnamecallmethod",
+      "aliases": [
+        "set_namecall_method"
+      ],
+      "category": "instance",
+      "parameters": "string method",
+      "returns": "void",
+      "description": "Overrides the method name in a __namecall metamethod context.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "cache.invalidate",
+      "aliases": [
+        "cache_invalidate"
+      ],
+      "category": "instance",
+      "parameters": "Instance instance",
+      "returns": "void",
+      "description": "Invalidates the cached reference to an Instance, forcing a fresh lookup.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "cache.iscached",
+      "aliases": [
+        "cache_iscached"
+      ],
+      "category": "instance",
+      "parameters": "Instance instance",
+      "returns": "boolean",
+      "description": "Returns true if an Instance reference is currently cached by the executor.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "cache.replace",
+      "aliases": [
+        "cache_replace"
+      ],
+      "category": "instance",
+      "parameters": "Instance target, Instance replacement",
+      "returns": "void",
+      "description": "Replaces an Instance reference in the executor's cache with another Instance.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "getinstancecachekey",
+      "aliases": [],
+      "category": "instance",
+      "parameters": "Instance instance",
+      "returns": "string",
+      "description": "Returns the cache key used internally for an Instance reference.",
+      "verified_source": "Sentinel"
+    },
+    {
+      "name": "getspecialinfo",
+      "aliases": [
+        "get_special_info",
+        "syn_obj_specialinfo"
+      ],
+      "category": "instance",
+      "parameters": "Instance instance",
+      "returns": "table",
+      "description": "Returns special property data for UnionOperations, MeshParts, and Terrain instances.",
+      "verified_source": "Sentinel, Synapse X"
+    },
+    {
+      "name": "isnetworkowner",
+      "aliases": [
+        "is_network_owner"
+      ],
+      "category": "instance",
+      "parameters": "Instance part",
+      "returns": "boolean",
+      "description": "Returns true if the local client has network ownership of the given BasePart.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "getallthreads",
+      "aliases": [
+        "get_all_threads"
+      ],
+      "category": "instance",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns a table of all active Lua threads in the game.",
+      "verified_source": "Elysian (Executor-API-Docs), Hydrogen"
+    },
+    {
+      "name": "getthreadobject",
+      "aliases": [],
+      "category": "instance",
+      "parameters": "thread? t",
+      "returns": "Instance",
+      "description": "Returns the script Instance associated with a Lua thread.",
+      "verified_source": "Elysian (Executor-API-Docs)"
+    },
+    {
+      "name": "readfile",
+      "aliases": [
+        "read_file",
+        "syn_io_read"
+      ],
+      "category": "filesystem",
+      "parameters": "string path",
+      "returns": "string",
+      "description": "Reads and returns the contents of a file in the executor's workspace folder.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel, Synapse X"
+    },
+    {
+      "name": "writefile",
+      "aliases": [
+        "write_file",
+        "syn_io_write"
+      ],
+      "category": "filesystem",
+      "parameters": "string path, string data",
+      "returns": "void",
+      "description": "Writes data to a file in the executor's workspace folder, creating it if needed.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "appendfile",
+      "aliases": [
+        "append_file",
+        "syn_io_append"
+      ],
+      "category": "filesystem",
+      "parameters": "string path, string data",
+      "returns": "void",
+      "description": "Appends data to the end of a file in the workspace folder.",
+      "verified_source": "UNC, Sentinel, Synapse X"
+    },
+    {
+      "name": "makefolder",
+      "aliases": [
+        "make_folder",
+        "createdirectory",
+        "create_directory"
+      ],
+      "category": "filesystem",
+      "parameters": "string path",
+      "returns": "void",
+      "description": "Creates a new folder in the executor's workspace directory.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "isfile",
+      "aliases": [
+        "is_file",
+        "syn_io_isfile"
+      ],
+      "category": "filesystem",
+      "parameters": "string path",
+      "returns": "boolean",
+      "description": "Returns true if the given path points to an existing file.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Hydrogen"
+    },
+    {
+      "name": "isfolder",
+      "aliases": [
+        "is_folder",
+        "syn_io_isfolder"
+      ],
+      "category": "filesystem",
+      "parameters": "string path",
+      "returns": "boolean",
+      "description": "Returns true if the given path points to an existing folder.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Hydrogen"
+    },
+    {
+      "name": "delfile",
+      "aliases": [
+        "delete_file",
+        "del_file",
+        "syn_io_delfile"
+      ],
+      "category": "filesystem",
+      "parameters": "string path",
+      "returns": "void",
+      "description": "Deletes a file from the executor's workspace folder.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Hydrogen"
+    },
+    {
+      "name": "delfolder",
+      "aliases": [
+        "delete_folder",
+        "del_folder",
+        "deldir",
+        "syn_io_delfolder"
+      ],
+      "category": "filesystem",
+      "parameters": "string path",
+      "returns": "void",
+      "description": "Deletes a folder and its contents from the executor's workspace.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "listfiles",
+      "aliases": [
+        "list_files",
+        "syn_io_listdir"
+      ],
+      "category": "filesystem",
+      "parameters": "string folder",
+      "returns": "table",
+      "description": "Returns a table of all files and subdirectories in the given folder path.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "runfile",
+      "aliases": [
+        "run_file"
+      ],
+      "category": "filesystem",
+      "parameters": "string path",
+      "returns": "void",
+      "description": "Executes a Lua file from the workspace folder directly.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "Drawing",
+      "aliases": [],
+      "category": "drawing",
+      "parameters": "void",
+      "returns": "table",
+      "description": "The Drawing API table that provides access to Drawing.new and Drawing.Fonts.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "Drawing.new",
+      "aliases": [],
+      "category": "drawing",
+      "parameters": "string classname",
+      "returns": "userdata",
+      "description": "Creates a new 2D drawing object of the specified class (Line, Circle, Square, Triangle, Text, Quad, Image).",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "Drawing.Fonts",
+      "aliases": [
+        "Drawing.fonts"
+      ],
+      "category": "drawing",
+      "parameters": "void",
+      "returns": "table",
+      "description": "A table of font constants for use with Drawing Text objects (e.g. Drawing.Fonts.UI, Drawing.Fonts.Plex).",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "Drawing.new(\"Line\")",
+      "aliases": [],
+      "category": "drawing",
+      "parameters": "void (created via Drawing.new)",
+      "returns": "Drawing Line object",
+      "description": "A 2D line with From, To, Color, Thickness, and Transparency properties.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "Drawing.new(\"Circle\")",
+      "aliases": [],
+      "category": "drawing",
+      "parameters": "void (created via Drawing.new)",
+      "returns": "Drawing Circle object",
+      "description": "A 2D circle with Position, Radius, Color, Thickness, Filled, NumSides, and Transparency properties.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "Drawing.new(\"Square\")",
+      "aliases": [],
+      "category": "drawing",
+      "parameters": "void (created via Drawing.new)",
+      "returns": "Drawing Square object",
+      "description": "A 2D square/rectangle with Position, Size, Color, Thickness, Filled, and Transparency properties.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "Drawing.new(\"Triangle\")",
+      "aliases": [],
+      "category": "drawing",
+      "parameters": "void (created via Drawing.new)",
+      "returns": "Drawing Triangle object",
+      "description": "A 2D triangle with PointA, PointB, PointC, Color, Thickness, Filled, and Transparency properties.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "Drawing.new(\"Text\")",
+      "aliases": [],
+      "category": "drawing",
+      "parameters": "void (created via Drawing.new)",
+      "returns": "Drawing Text object",
+      "description": "2D text with Text, Position, Color, Size, Center, Outline, Font, and Transparency properties.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "Drawing.new(\"Quad\")",
+      "aliases": [],
+      "category": "drawing",
+      "parameters": "void (created via Drawing.new)",
+      "returns": "Drawing Quad object",
+      "description": "A 2D quadrilateral with four point vertices, Color, Filled, Thickness, and Transparency.",
+      "verified_source": "Hydrogen, Fluxus"
+    },
+    {
+      "name": "Drawing.new(\"Image\")",
+      "aliases": [],
+      "category": "drawing",
+      "parameters": "void (created via Drawing.new)",
+      "returns": "Drawing Image object",
+      "description": "A 2D image with Data (base64), Position, Size, Rounding, Color, and Transparency properties.",
+      "verified_source": "Hydrogen, Fluxus"
+    },
+    {
+      "name": "cleardrawcache",
+      "aliases": [
+        "clear_draw_cache",
+        "cleardrawcache"
+      ],
+      "category": "drawing",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Clears all active Drawing objects from the render cache.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "isrenderobj",
+      "aliases": [
+        "is_render_obj"
+      ],
+      "category": "drawing",
+      "parameters": "userdata obj",
+      "returns": "boolean",
+      "description": "Returns true if the given userdata is a valid Drawing/render object.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "getrenderproperty",
+      "aliases": [
+        "get_render_property"
+      ],
+      "category": "drawing",
+      "parameters": "userdata obj, string property",
+      "returns": "any",
+      "description": "Gets a property value from a Drawing/render object.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "setrenderproperty",
+      "aliases": [
+        "set_render_property"
+      ],
+      "category": "drawing",
+      "parameters": "userdata obj, string property, any value",
+      "returns": "void",
+      "description": "Sets a property value on a Drawing/render object.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "request",
+      "aliases": [
+        "http_request",
+        "syn.request",
+        "syn_net_request"
+      ],
+      "category": "network",
+      "parameters": "table request",
+      "returns": "table",
+      "description": "Sends an HTTP request with Url, Method, Headers, and Body fields and returns the response.",
+      "verified_source": "UNC, Sentinel, Synapse X, Krnl"
+    },
+    {
+      "name": "websocket.connect",
+      "aliases": [
+        "ws_connect",
+        "syn_net_websocket"
+      ],
+      "category": "network",
+      "parameters": "string url, table? headers",
+      "returns": "userdata",
+      "description": "Opens a WebSocket connection to the specified URL and returns a WebSocket object.",
+      "verified_source": "Synapse X, Krnl"
+    },
+    {
+      "name": "mouse1click",
+      "aliases": [
+        "mouse_left_click",
+        "syn_mouse1click"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates a complete left mouse button click (press then release).",
+      "verified_source": "Sentinel, Synapse X"
+    },
+    {
+      "name": "mouse1press",
+      "aliases": [
+        "mouse_left_down",
+        "mouse_left_press",
+        "mouse1down",
+        "syn_mouse1press"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates pressing and holding the left mouse button.",
+      "verified_source": "Sentinel, Synapse X, Krnl"
+    },
+    {
+      "name": "mouse1release",
+      "aliases": [
+        "mouse_left_up",
+        "mouse_left_release",
+        "mouse1up",
+        "syn_mouse1release"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates releasing the left mouse button.",
+      "verified_source": "Sentinel, Synapse X, Krnl"
+    },
+    {
+      "name": "mouse2click",
+      "aliases": [
+        "mouse_right_click",
+        "syn_mouse2click"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates a complete right mouse button click.",
+      "verified_source": "Sentinel, Synapse X"
+    },
+    {
+      "name": "mouse2press",
+      "aliases": [
+        "mouse_right_down",
+        "mouse_right_press",
+        "mouse2down",
+        "syn_mouse2press"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates pressing and holding the right mouse button.",
+      "verified_source": "Sentinel, Synapse X, Krnl"
+    },
+    {
+      "name": "mouse2release",
+      "aliases": [
+        "mouse_right_up",
+        "mouse_right_release",
+        "mouse2up",
+        "syn_mouse2release"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates releasing the right mouse button.",
+      "verified_source": "Sentinel, Synapse X, Krnl"
+    },
+    {
+      "name": "mousemoveabs",
+      "aliases": [
+        "mouse_move_abs",
+        "movemouseabs",
+        "syn_mousemoveabs"
+      ],
+      "category": "input",
+      "parameters": "number x, number y",
+      "returns": "void",
+      "description": "Moves the mouse cursor to absolute coordinates relative to the game window.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "mousemoverel",
+      "aliases": [
+        "mouse_move_rel",
+        "movemouserel",
+        "syn_mousemoverel"
+      ],
+      "category": "input",
+      "parameters": "number x, number y",
+      "returns": "void",
+      "description": "Moves the mouse cursor by a relative offset from the current position.",
+      "verified_source": "Sentinel, Synapse X, Hydrogen"
+    },
+    {
+      "name": "mousescroll",
+      "aliases": [
+        "mouse_scroll",
+        "syn_mousescroll"
+      ],
+      "category": "input",
+      "parameters": "number amount",
+      "returns": "void",
+      "description": "Simulates scrolling the mouse wheel by the specified amount.",
+      "verified_source": "Synapse X, Hydrogen"
+    },
+    {
+      "name": "keypress",
+      "aliases": [
+        "key_down",
+        "syn_keypress"
+      ],
+      "category": "input",
+      "parameters": "number keycode",
+      "returns": "void",
+      "description": "Simulates pressing and holding a keyboard key by its virtual keycode.",
+      "verified_source": "Sentinel, Synapse X"
+    },
+    {
+      "name": "keyrelease",
+      "aliases": [
+        "key_up",
+        "syn_keyrelease"
+      ],
+      "category": "input",
+      "parameters": "number keycode",
+      "returns": "void",
+      "description": "Simulates releasing a keyboard key previously held by keypress.",
+      "verified_source": "Sentinel, Synapse X"
+    },
+    {
+      "name": "isrbxactive",
+      "aliases": [
+        "is_roblox_active",
+        "iswindowactive",
+        "isrbxwindowactive",
+        "syn_isactive"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "boolean",
+      "description": "Returns true if the Roblox game window is currently focused/active.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "fireclickdetector",
+      "aliases": [
+        "fire_click_detector",
+        "syn_fireclickdetector"
+      ],
+      "category": "input",
+      "parameters": "Instance clickDetector, number? distance",
+      "returns": "void",
+      "description": "Simulates clicking a ClickDetector instance, optionally at a specified distance.",
+      "verified_source": "UNC, Sentinel, Synapse X"
+    },
+    {
+      "name": "firetouchinterest",
+      "aliases": [
+        "fire_touch_interest",
+        "syn_firetouchinterest"
+      ],
+      "category": "input",
+      "parameters": "Instance part, Instance touchTransmitter, number toggle",
+      "returns": "void",
+      "description": "Fires a touch interest event between a Part and TouchTransmitter (toggle 0=touch, 1=untouch).",
+      "verified_source": "UNC, Synapse X"
+    },
+    {
+      "name": "firesignal",
+      "aliases": [
+        "fire_signal",
+        "fire_event"
+      ],
+      "category": "input",
+      "parameters": "RBXScriptSignal signal, ...args",
+      "returns": "void",
+      "description": "Fires an RBXScriptSignal with the provided arguments, triggering all connected functions.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "debug.getconstant",
+      "aliases": [
+        "debug.get_const"
+      ],
+      "category": "debug",
+      "parameters": "function | number f, number idx",
+      "returns": "any",
+      "description": "Returns the constant at the specified index in a function or stack level.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.getconstants",
+      "aliases": [
+        "debug.get_consts"
+      ],
+      "category": "debug",
+      "parameters": "function | number f",
+      "returns": "table",
+      "description": "Returns a table of all constants in a function or stack level.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.getinfo",
+      "aliases": [],
+      "category": "debug",
+      "parameters": "function | number f",
+      "returns": "table",
+      "description": "Returns a table with info about a function including source, what, name, nups, and func.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.getproto",
+      "aliases": [
+        "debug.get_proto"
+      ],
+      "category": "debug",
+      "parameters": "function f, number index, boolean? all",
+      "returns": "function | table",
+      "description": "Returns the inner function (proto) at the given index; if all is true, returns all instances.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.getprotos",
+      "aliases": [
+        "debug.get_protos"
+      ],
+      "category": "debug",
+      "parameters": "function f",
+      "returns": "table",
+      "description": "Returns a table of all inner functions (protos) defined within a function.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.getstack",
+      "aliases": [
+        "debug.get_stack"
+      ],
+      "category": "debug",
+      "parameters": "number level",
+      "returns": "table | any",
+      "description": "Returns a table of all values at a specific stack level, or a single value if indexed.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.getupvalue",
+      "aliases": [
+        "debug.get_upvalue",
+        "getupvalue"
+      ],
+      "category": "debug",
+      "parameters": "function | number f, number idx",
+      "returns": "any",
+      "description": "Returns the upvalue at the specified index in a function or stack level.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.getupvalues",
+      "aliases": [
+        "debug.get_upvalues",
+        "getupvalues"
+      ],
+      "category": "debug",
+      "parameters": "function | number f",
+      "returns": "table",
+      "description": "Returns a table of all upvalues in a function or stack level.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.setconstant",
+      "aliases": [
+        "debug.set_const"
+      ],
+      "category": "debug",
+      "parameters": "function | number f, number idx, any value",
+      "returns": "void",
+      "description": "Sets the constant at the specified index in a function to a new value.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.setstack",
+      "aliases": [
+        "debug.set_stack"
+      ],
+      "category": "debug",
+      "parameters": "number level, number idx, any value",
+      "returns": "void",
+      "description": "Sets a value at the specified index of a stack level.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.setupvalue",
+      "aliases": [
+        "debug.set_upvalue"
+      ],
+      "category": "debug",
+      "parameters": "function | number f, number idx, any value",
+      "returns": "void",
+      "description": "Sets the upvalue at the specified index in a function to a new value.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.getmetatable",
+      "aliases": [
+        "debug.get_metatable"
+      ],
+      "category": "debug",
+      "parameters": "any obj",
+      "returns": "table | nil",
+      "description": "Returns the metatable of any value without invoking the __metatable metamethod.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "debug.setmetatable",
+      "aliases": [
+        "debug.set_metatable"
+      ],
+      "category": "debug",
+      "parameters": "any obj, table mt",
+      "returns": "void",
+      "description": "Sets the metatable of a value, including primitive types.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "debug.profilebegin",
+      "aliases": [
+        "debug.profile_begin"
+      ],
+      "category": "debug",
+      "parameters": "string label",
+      "returns": "void",
+      "description": "Begins a microprofiler section with the given label for performance analysis.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.profileend",
+      "aliases": [
+        "debug.profile_end"
+      ],
+      "category": "debug",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Ends the current microprofiler section started with debug.profilebegin.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Sentinel"
+    },
+    {
+      "name": "debug.traceback",
+      "aliases": [],
+      "category": "debug",
+      "parameters": "string? message, number? level",
+      "returns": "string",
+      "description": "Returns a string traceback of the call stack, optionally with a prepended message.",
+      "verified_source": "UNC, Sentinel"
+    },
+    {
+      "name": "debug.getregistry",
+      "aliases": [],
+      "category": "debug",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns the Lua registry table, equivalent to getreg().",
+      "verified_source": "Sentinel"
+    },
+    {
+      "name": "debug.getcallstack",
+      "aliases": [
+        "debug.get_call_stack"
+      ],
+      "category": "debug",
+      "parameters": "number? level",
+      "returns": "table",
+      "description": "Returns the call stack as a table of function entries.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "debug.info",
+      "aliases": [],
+      "category": "debug",
+      "parameters": "function | number f, string format",
+      "returns": "any...",
+      "description": "Returns information about a function or stack level based on a format string (e.g., 'slna').",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "debug.validlevel",
+      "aliases": [
+        "debug.valid_level"
+      ],
+      "category": "debug",
+      "parameters": "number level",
+      "returns": "boolean",
+      "description": "Returns true if the given stack level is valid/accessible.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "debug.setmemorycategory",
+      "aliases": [],
+      "category": "debug",
+      "parameters": "string category",
+      "returns": "void",
+      "description": "Sets a custom memory profiling category for tracking allocations.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "debug.resetmemorycategory",
+      "aliases": [],
+      "category": "debug",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Resets the memory category label for the microprofiler.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "getregistry",
+      "aliases": [],
+      "category": "debug",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns the Lua registry; alias for getreg() and debug.getregistry().",
+      "verified_source": "Sentinel"
+    },
+    {
+      "name": "getupvalue",
+      "aliases": [],
+      "category": "debug",
+      "parameters": "function f, number idx",
+      "returns": "any",
+      "description": "Returns the upvalue at the given index for a function; non-debug-prefixed version.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "getupvalues",
+      "aliases": [],
+      "category": "debug",
+      "parameters": "function f",
+      "returns": "table",
+      "description": "Returns all upvalues for a function; non-debug-prefixed version.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "crypt.base64encode",
+      "aliases": [
+        "crypt.base64.encode",
+        "crypt.base64_encode",
+        "base64.encode",
+        "base64_encode",
+        "syn_crypt_b64_encode"
+      ],
+      "category": "crypto",
+      "parameters": "string data",
+      "returns": "string",
+      "description": "Encodes a string using Base64 encoding.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Synapse X"
+    },
+    {
+      "name": "crypt.base64decode",
+      "aliases": [
+        "crypt.base64.decode",
+        "crypt.base64_decode",
+        "base64.decode",
+        "base64_decode",
+        "syn_crypt_b64_decode"
+      ],
+      "category": "crypto",
+      "parameters": "string data",
+      "returns": "string",
+      "description": "Decodes a Base64-encoded string back to its original form.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Synapse X"
+    },
+    {
+      "name": "crypt.encrypt",
+      "aliases": [
+        "crypt.encrypt_data",
+        "syn_crypt_encrypt"
+      ],
+      "category": "crypto",
+      "parameters": "string data, string key, string? iv, string mode",
+      "returns": "string, string",
+      "description": "Encrypts data using AES with the specified key, IV, and cipher mode (CBC, ECB, etc.).",
+      "verified_source": "UNC (UNCCheckEnv.lua), Synapse X"
+    },
+    {
+      "name": "crypt.decrypt",
+      "aliases": [
+        "crypt.decrypt_data",
+        "syn_crypt_decrypt"
+      ],
+      "category": "crypto",
+      "parameters": "string data, string key, string? iv, string mode",
+      "returns": "string",
+      "description": "Decrypts AES-encrypted data using the specified key, IV, and cipher mode.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Synapse X"
+    },
+    {
+      "name": "crypt.generatebytes",
+      "aliases": [
+        "crypt.generate_bytes"
+      ],
+      "category": "crypto",
+      "parameters": "number size",
+      "returns": "string",
+      "description": "Generates a string of random bytes of the specified length for use in cryptographic operations.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "crypt.generatekey",
+      "aliases": [
+        "crypt.generate_key"
+      ],
+      "category": "crypto",
+      "parameters": "void",
+      "returns": "string",
+      "description": "Generates a random AES encryption key suitable for use with crypt.encrypt/decrypt.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "crypt.hash",
+      "aliases": [
+        "syn_crypt_hash"
+      ],
+      "category": "crypto",
+      "parameters": "string data, string? algorithm",
+      "returns": "string",
+      "description": "Computes a cryptographic hash of data using the specified algorithm (SHA256, MD5, etc.).",
+      "verified_source": "UNC (UNCCheckEnv.lua), Synapse X"
+    },
+    {
+      "name": "md5hash",
+      "aliases": [
+        "md5",
+        "md5sum"
+      ],
+      "category": "crypto",
+      "parameters": "string data",
+      "returns": "string",
+      "description": "Computes the MD5 hash of a string.",
+      "verified_source": "Elysian (Executor-API-Docs)"
+    },
+    {
+      "name": "sha384hash",
+      "aliases": [
+        "sha384"
+      ],
+      "category": "crypto",
+      "parameters": "string data",
+      "returns": "string",
+      "description": "Computes the SHA-384 hash of a string.",
+      "verified_source": "Krnl (Executor-API-Docs)"
+    },
+    {
+      "name": "rconsolecreate",
+      "aliases": [
+        "consolecreate",
+        "syn_console_create"
+      ],
+      "category": "console",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Creates and opens the executor's console window.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "rconsoleprint",
+      "aliases": [
+        "consoleprint",
+        "syn_console_print"
+      ],
+      "category": "console",
+      "parameters": "string message",
+      "returns": "void",
+      "description": "Prints a message to the executor's console window.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "rconsoleclear",
+      "aliases": [
+        "consoleclear",
+        "syn_console_clear"
+      ],
+      "category": "console",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Clears all text in the executor's console window.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "rconsoledestroy",
+      "aliases": [
+        "consoledestroy",
+        "syn_console_destroy"
+      ],
+      "category": "console",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Destroys and closes the executor's console window.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "rconsoleinput",
+      "aliases": [
+        "consoleinput",
+        "syn_console_input"
+      ],
+      "category": "console",
+      "parameters": "void",
+      "returns": "string",
+      "description": "Yields execution and waits for user input from the console, returning the entered text.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "rconsolesettitle",
+      "aliases": [
+        "rconsolename",
+        "consolesettitle",
+        "syn_console_name"
+      ],
+      "category": "console",
+      "parameters": "string title",
+      "returns": "void",
+      "description": "Sets the title bar text of the executor's console window.",
+      "verified_source": "UNC (UNCCheckEnv.lua)"
+    },
+    {
+      "name": "messagebox",
+      "aliases": [
+        "message_box"
+      ],
+      "category": "console",
+      "parameters": "string text, string caption, number? flags",
+      "returns": "number",
+      "description": "Displays a Windows message box and returns the button ID that was clicked.",
+      "verified_source": "UNC, Sentinel"
+    },
+    {
+      "name": "getconnections",
+      "aliases": [
+        "get_connections",
+        "get_signal_connections",
+        "syn_getconnections"
+      ],
+      "category": "signal",
+      "parameters": "RBXScriptSignal signal",
+      "returns": "table",
+      "description": "Returns a table of all connected functions to an RBXScriptSignal, with Enable/Disable methods.",
+      "verified_source": "UNC, Sentinel, Synapse X"
+    },
+    {
+      "name": "fireproximityprompt",
+      "aliases": [
+        "fire_proximity_prompt",
+        "fire_prompt"
+      ],
+      "category": "signal",
+      "parameters": "Instance prompt",
+      "returns": "void",
+      "description": "Simulates firing/activating a ProximityPrompt instance as if the player interacted with it.",
+      "verified_source": "Krnl (Executor-API-Docs)"
+    },
+    {
+      "name": "getthreadidentity",
+      "aliases": [
+        "getidentity",
+        "get_thread_identity",
+        "getthreadcontext",
+        "syn_context_get"
+      ],
+      "category": "thread",
+      "parameters": "void",
+      "returns": "number",
+      "description": "Returns the current thread's security context level (identity).",
+      "verified_source": "UNC (UNCCheckEnv.lua), Hydrogen"
+    },
+    {
+      "name": "setthreadidentity",
+      "aliases": [
+        "setidentity",
+        "set_thread_identity",
+        "setthreadcontext",
+        "syn_context_set"
+      ],
+      "category": "thread",
+      "parameters": "number level",
+      "returns": "void",
+      "description": "Sets the current thread's security context level for accessing restricted operations.",
+      "verified_source": "UNC (UNCCheckEnv.lua), Hydrogen"
+    },
+    {
+      "name": "queue_on_teleport",
+      "aliases": [
+        "queueonteleport",
+        "queue_on_teleport"
+      ],
+      "category": "thread",
+      "parameters": "string source",
+      "returns": "void",
+      "description": "Queues a script to be automatically executed when the player teleports to another place.",
+      "verified_source": "UNC, Sentinel, Synapse X"
+    },
+    {
+      "name": "setfpscap",
+      "aliases": [
+        "set_fps_cap",
+        "setfpscap"
+      ],
+      "category": "thread",
+      "parameters": "number fps",
+      "returns": "void",
+      "description": "Sets the executor's frames-per-second cap (0 for unlimited).",
+      "verified_source": "UNC, Hydrogen"
+    },
+    {
+      "name": "setclipboard",
+      "aliases": [
+        "toclipboard",
+        "set_clipboard",
+        "copy",
+        "syn_clipboard_set"
+      ],
+      "category": "ui",
+      "parameters": "string text",
+      "returns": "void",
+      "description": "Copies the provided text to the system clipboard.",
+      "verified_source": "UNC, Sentinel, Hydrogen"
+    },
+    {
+      "name": "bit.arshift",
+      "aliases": [
+        "bit32.arshift"
+      ],
+      "category": "bitwise",
+      "parameters": "number x, number n",
+      "returns": "number",
+      "description": "Performs an arithmetic right shift of n bits on x.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "bit.band",
+      "aliases": [
+        "bit32.band"
+      ],
+      "category": "bitwise",
+      "parameters": "number a, number b",
+      "returns": "number",
+      "description": "Performs a bitwise AND operation on two numbers.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "bit.bnot",
+      "aliases": [
+        "bit32.bnot"
+      ],
+      "category": "bitwise",
+      "parameters": "number x",
+      "returns": "number",
+      "description": "Performs a bitwise NOT operation on a number, flipping all bits.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "bit.bor",
+      "aliases": [
+        "bit32.bor"
+      ],
+      "category": "bitwise",
+      "parameters": "number a, number b",
+      "returns": "number",
+      "description": "Performs a bitwise OR operation on two numbers.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "bit.bxor",
+      "aliases": [
+        "bit32.bxor"
+      ],
+      "category": "bitwise",
+      "parameters": "number a, number b",
+      "returns": "number",
+      "description": "Performs a bitwise XOR (exclusive OR) operation on two numbers.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "bit.lshift",
+      "aliases": [
+        "bit32.lshift"
+      ],
+      "category": "bitwise",
+      "parameters": "number x, number n",
+      "returns": "number",
+      "description": "Performs a logical left shift of n bits on x.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "bit.rshift",
+      "aliases": [
+        "bit32.rshift"
+      ],
+      "category": "bitwise",
+      "parameters": "number x, number n",
+      "returns": "number",
+      "description": "Performs a logical right shift of n bits on x.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "bit.rol",
+      "aliases": [
+        "bit32.rol",
+        "bit.lrotate"
+      ],
+      "category": "bitwise",
+      "parameters": "number x, number n",
+      "returns": "number",
+      "description": "Performs a left bitwise rotation of n bits on x.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "bit.ror",
+      "aliases": [
+        "bit32.ror",
+        "bit.rrotate"
+      ],
+      "category": "bitwise",
+      "parameters": "number x, number n",
+      "returns": "number",
+      "description": "Performs a right bitwise rotation of n bits on x.",
+      "verified_source": "Sentinel, Hydrogen"
+    },
+    {
+      "name": "bit.tobit",
+      "aliases": [
+        "bit32.tobit"
+      ],
+      "category": "bitwise",
+      "parameters": "number x",
+      "returns": "number",
+      "description": "Normalizes a number to a 32-bit signed integer for bitwise operations.",
+      "verified_source": "Sentinel"
+    },
+    {
+      "name": "bit.tohex",
+      "aliases": [
+        "bit32.tohex"
+      ],
+      "category": "bitwise",
+      "parameters": "number x, number? digits",
+      "returns": "string",
+      "description": "Converts a number to its hexadecimal string representation.",
+      "verified_source": "Sentinel"
+    },
+    {
+      "name": "bit.bswap",
+      "aliases": [
+        "bit32.bswap"
+      ],
+      "category": "bitwise",
+      "parameters": "number x",
+      "returns": "number",
+      "description": "Swaps the byte order of a 32-bit integer (big-endian to little-endian or vice versa).",
+      "verified_source": "Sentinel"
+    },
+    {
+      "name": "bit.extract",
+      "aliases": [
+        "bit32.extract"
+      ],
+      "category": "bitwise",
+      "parameters": "number x, number field, number? width",
+      "returns": "number",
+      "description": "Extracts a range of bits from a number starting at the given field position.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "bit.replace",
+      "aliases": [
+        "bit32.replace"
+      ],
+      "category": "bitwise",
+      "parameters": "number v, number r, number field, number? width",
+      "returns": "number",
+      "description": "Replaces a range of bits in v with bits from r at the specified field position.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "bit.countlz",
+      "aliases": [
+        "bit32.countlz"
+      ],
+      "category": "bitwise",
+      "parameters": "number x",
+      "returns": "number",
+      "description": "Counts the number of leading zero bits in a 32-bit integer.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "bit.countrz",
+      "aliases": [
+        "bit32.countrz"
+      ],
+      "category": "bitwise",
+      "parameters": "number x",
+      "returns": "number",
+      "description": "Counts the number of trailing zero bits in a 32-bit integer.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "bit.btest",
+      "aliases": [
+        "bit32.btest"
+      ],
+      "category": "bitwise",
+      "parameters": "number a, number b",
+      "returns": "boolean",
+      "description": "Returns true if the bitwise AND of a and b is non-zero.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "delta:AddTab",
+      "aliases": [],
+      "category": "delta-specific",
+      "parameters": "string name, string? scriptContent",
+      "returns": "void",
+      "description": "Adds a new tab to the Delta executor's main menu with an optional pre-loaded script.",
+      "verified_source": "AZYsGithub/DeltaXPlugin"
+    },
+    {
+      "name": "delta:SetCurrentSuggestionScript",
+      "aliases": [],
+      "category": "delta-specific",
+      "parameters": "string name, string description, function onClick",
+      "returns": "void",
+      "description": "Adds a script suggestion to the Delta main menu that executes the provided function when clicked.",
+      "verified_source": "AZYsGithub/DeltaXPlugin"
+    },
+    {
+      "name": "delta:SaveScript",
+      "aliases": [],
+      "category": "delta-specific",
+      "parameters": "string name, string source, string? tag",
+      "returns": "void",
+      "description": "Saves a script to the Delta local scripts menu with a name, source code, and optional tag.",
+      "verified_source": "AZYsGithub/DeltaXPlugin"
+    },
+    {
+      "name": "delta.Settings:AddButton",
+      "aliases": [],
+      "category": "delta-specific",
+      "parameters": "string label, string description, function onClick",
+      "returns": "void",
+      "description": "Adds a clickable button to the Delta plugin settings panel.",
+      "verified_source": "AZYsGithub/DeltaXPlugin"
+    },
+    {
+      "name": "delta.Settings:AddSwitch",
+      "aliases": [],
+      "category": "delta-specific",
+      "parameters": "string label, string description, boolean defaultState, function onToggle",
+      "returns": "void",
+      "description": "Adds a toggle switch to the Delta plugin settings with a callback that receives the state.",
+      "verified_source": "AZYsGithub/DeltaXPlugin"
+    },
+    {
+      "name": "delta.Settings:AddInput",
+      "aliases": [],
+      "category": "delta-specific",
+      "parameters": "string label, string description, function onSubmit",
+      "returns": "void",
+      "description": "Adds a text input field to the Delta plugin settings with a callback that receives the text.",
+      "verified_source": "AZYsGithub/DeltaXPlugin"
+    },
+    {
+      "name": "delta.Settings:AddDropdown",
+      "aliases": [],
+      "category": "delta-specific",
+      "parameters": "string label, string description, string defaultOption, table options, function onSelect",
+      "returns": "void",
+      "description": "Adds a dropdown selector to the Delta plugin settings with predefined options.",
+      "verified_source": "AZYsGithub/DeltaXPlugin"
+    },
+    {
+      "name": "emulate_call",
+      "aliases": [
+        "emulate_calling"
+      ],
+      "category": "environment",
+      "parameters": "function fn, ...args",
+      "returns": "any...",
+      "description": "Calls a function while spoofing the calling context to appear as if it's from the game.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "secure_call",
+      "aliases": [
+        "syn.secure_call"
+      ],
+      "category": "environment",
+      "parameters": "function fn, ...args",
+      "returns": "any...",
+      "description": "Executes a function in a secure/protected environment with elevated permissions.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "protect_gui",
+      "aliases": [
+        "syn.protect_gui"
+      ],
+      "category": "ui",
+      "parameters": "Instance gui",
+      "returns": "void",
+      "description": "Protects a GUI instance from being removed or modified by the game's anti-cheat.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "run_on_actor",
+      "aliases": [
+        "syn.run_on_actor"
+      ],
+      "category": "thread",
+      "parameters": "Instance actor, function fn",
+      "returns": "void",
+      "description": "Executes a function on a specific Actor instance context.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "getcurrentline",
+      "aliases": [
+        "get_current_line"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "number",
+      "description": "Returns the current source line number being executed in the script.",
+      "verified_source": "Hydrogen"
+    },
+    {
+      "name": "require",
+      "aliases": [
+        "syn.require"
+      ],
+      "category": "environment",
+      "parameters": "ModuleScript module",
+      "returns": "any",
+      "description": "Loads and returns the result of a ModuleScript, with executor-level support for asset IDs.",
+      "verified_source": "UNC, Hydrogen"
+    },
+    {
+      "name": "getmoduleunlocked",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "ModuleScript module",
+      "returns": "boolean",
+      "description": "Returns true if a ModuleScript has been fully executed/unlocked by the require system.",
+      "verified_source": "Krnl"
+    },
+    {
+      "name": "setmoduleunlocked",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "ModuleScript module, boolean unlocked",
+      "returns": "void",
+      "description": "Manually sets the unlocked state of a ModuleScript in the require cache.",
+      "verified_source": "Krnl"
+    },
+    {
+      "name": "luau_compile",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "string source",
+      "returns": "string",
+      "description": "Compiles Luau source code into bytecode string format.",
+      "verified_source": "Krnl"
+    },
+    {
+      "name": "luau_load",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "string bytecode, table? env",
+      "returns": "function",
+      "description": "Loads compiled Luau bytecode into an executable function with an optional environment.",
+      "verified_source": "Krnl"
+    },
+    {
+      "name": "getnetworkmode",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "string",
+      "description": "Returns the current network mode setting of the executor.",
+      "verified_source": "Krnl"
+    },
+    {
+      "name": "setnetworkmode",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "string mode",
+      "returns": "void",
+      "description": "Sets the executor's network mode for handling HTTP requests.",
+      "verified_source": "Krnl"
+    },
+    {
+      "name": "syn.dumpstring",
+      "aliases": [
+        "syn_dumpstring"
+      ],
+      "category": "environment",
+      "parameters": "Instance script",
+      "returns": "string",
+      "description": "Dumps the raw bytecode of a script chunk as a string.",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getloadedmodules",
+      "aliases": [
+        "syn_getloadedmodules"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns a table of all ModuleScript instances loaded in the game (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getgc",
+      "aliases": [
+        "syn_getgc"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns the Lua garbage collector list (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getsenv",
+      "aliases": [
+        "syn_getsenv"
+      ],
+      "category": "environment",
+      "parameters": "Instance script",
+      "returns": "table | nil",
+      "description": "Returns the environment of a script, or nil if the script is not running (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getscripts",
+      "aliases": [
+        "syn_getscripts"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns a table of all scripts in the game (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getcallingscript",
+      "aliases": [
+        "syn_getcallingscript"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "Instance | nil",
+      "description": "Returns the script that called the current function (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getgenv",
+      "aliases": [
+        "syn_getgenv"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns the Synapse executor global environment (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getinstances",
+      "aliases": [
+        "syn_getinstances"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns all instances in the game hierarchy (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getreg",
+      "aliases": [
+        "syn_getreg"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns the Lua registry table (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getrenv",
+      "aliases": [
+        "syn_getrenv"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns the Roblox game global environment (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getnilinstances",
+      "aliases": [
+        "syn_getnilinstances"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns all instances parented to nil (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getrunningscripts",
+      "aliases": [
+        "syn_getrunningscripts"
+      ],
+      "category": "environment",
+      "parameters": "void",
+      "returns": "table",
+      "description": "Returns all currently running scripts (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.crypt.encrypt",
+      "aliases": [
+        "syn_crypt_encrypt"
+      ],
+      "category": "crypto",
+      "parameters": "string data, string key",
+      "returns": "string",
+      "description": "Encrypts data with a key using Synapse's encryption (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.crypt.hash",
+      "aliases": [
+        "syn_crypt_hash"
+      ],
+      "category": "crypto",
+      "parameters": "string data",
+      "returns": "string",
+      "description": "Returns a hash of the provided data (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.crypt.b64.encode",
+      "aliases": [
+        "syn_crypt_b64_encode"
+      ],
+      "category": "crypto",
+      "parameters": "string data",
+      "returns": "string",
+      "description": "Base64 encodes a string (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.crypt.b64.decode",
+      "aliases": [
+        "syn_crypt_b64_decode"
+      ],
+      "category": "crypto",
+      "parameters": "string data",
+      "returns": "string",
+      "description": "Base64 decodes a string (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.crypt.decrypt",
+      "aliases": [
+        "syn_crypt_decrypt"
+      ],
+      "category": "crypto",
+      "parameters": "string data, string key",
+      "returns": "string",
+      "description": "Decrypts data with a key using Synapse's decryption (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.newcclosure",
+      "aliases": [
+        "syn_newcclosure"
+      ],
+      "category": "closure",
+      "parameters": "function fn",
+      "returns": "function",
+      "description": "Creates a new C closure wrapping the provided function (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.hookfunction",
+      "aliases": [
+        "syn_hookfunction"
+      ],
+      "category": "closure",
+      "parameters": "function target, function hook",
+      "returns": "function",
+      "description": "Hooks a target function with a replacement (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.islclosure",
+      "aliases": [
+        "syn_islclosure"
+      ],
+      "category": "closure",
+      "parameters": "function fn",
+      "returns": "boolean",
+      "description": "Checks if a function is a Luau closure (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.checkcaller",
+      "aliases": [
+        "syn_checkcaller"
+      ],
+      "category": "closure",
+      "parameters": "void",
+      "returns": "boolean",
+      "description": "Checks if the current thread belongs to Synapse (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.context.set",
+      "aliases": [
+        "syn_context_set"
+      ],
+      "category": "thread",
+      "parameters": "number context",
+      "returns": "void",
+      "description": "Sets the thread context/security level (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.context.get",
+      "aliases": [
+        "syn_context_get"
+      ],
+      "category": "thread",
+      "parameters": "void",
+      "returns": "number",
+      "description": "Gets the current thread context/security level (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.fireclickdetector",
+      "aliases": [],
+      "category": "input",
+      "parameters": "Instance detector, number? distance",
+      "returns": "void",
+      "description": "Fires a ClickDetector with optional distance (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.firetouchinterest",
+      "aliases": [],
+      "category": "input",
+      "parameters": "Instance part, Instance transmitter, number toggle",
+      "returns": "void",
+      "description": "Fires a touch interest event (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.getconnections",
+      "aliases": [],
+      "category": "signal",
+      "parameters": "RBXScriptSignal signal",
+      "returns": "table",
+      "description": "Gets all connections to a signal (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.clipboard.get",
+      "aliases": [
+        "syn_clipboard_get"
+      ],
+      "category": "ui",
+      "parameters": "void",
+      "returns": "string",
+      "description": "Gets the current clipboard contents (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.clipboard.set",
+      "aliases": [
+        "syn_clipboard_set"
+      ],
+      "category": "ui",
+      "parameters": "string content",
+      "returns": "void",
+      "description": "Sets the clipboard content to the provided string (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.console.print",
+      "aliases": [
+        "syn_console_print"
+      ],
+      "category": "console",
+      "parameters": "string text",
+      "returns": "void",
+      "description": "Prints text to the Synapse console window (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.console.iprint",
+      "aliases": [
+        "syn_console_iprint"
+      ],
+      "category": "console",
+      "parameters": "string text",
+      "returns": "void",
+      "description": "Prints an [INFO]-prefixed message to the Synapse console (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.console.eprint",
+      "aliases": [
+        "syn_console_eprint"
+      ],
+      "category": "console",
+      "parameters": "string text",
+      "returns": "void",
+      "description": "Prints an [ERR]-prefixed message to the Synapse console (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.console.wprint",
+      "aliases": [
+        "syn_console_wprint"
+      ],
+      "category": "console",
+      "parameters": "string text",
+      "returns": "void",
+      "description": "Prints a [WARN]-prefixed message to the Synapse console (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.console.input",
+      "aliases": [
+        "syn_console_input"
+      ],
+      "category": "console",
+      "parameters": "void",
+      "returns": "string",
+      "description": "Reads user input from the Synapse console, yielding the thread (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.console.input_async",
+      "aliases": [
+        "syn_console_input_async"
+      ],
+      "category": "console",
+      "parameters": "void",
+      "returns": "string",
+      "description": "Reads user input from the Synapse console asynchronously without yielding the engine (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.console.name",
+      "aliases": [
+        "syn_console_name"
+      ],
+      "category": "console",
+      "parameters": "string name",
+      "returns": "void",
+      "description": "Sets the title of the Synapse console window (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.obj.save",
+      "aliases": [
+        "syn_obj_save"
+      ],
+      "category": "instance",
+      "parameters": "Instance | table instances, table? flags",
+      "returns": "void",
+      "description": "Saves game instances to a .rbxl file in the workspace folder (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.obj.override",
+      "aliases": [
+        "syn_obj_override"
+      ],
+      "category": "instance",
+      "parameters": "Instance obj, string property, any value",
+      "returns": "void",
+      "description": "Overrides an Instance property and prevents its network replication (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.obj.specialinfo",
+      "aliases": [
+        "syn_obj_specialinfo"
+      ],
+      "category": "instance",
+      "parameters": "Instance obj",
+      "returns": "table",
+      "description": "Returns special mesh/union/terrain data for an Instance (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.decompile",
+      "aliases": [
+        "syn_decompile"
+      ],
+      "category": "environment",
+      "parameters": "Instance script, boolean? bytecode",
+      "returns": "string",
+      "description": "Decompiles a script to source code or bytecode (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.isactive",
+      "aliases": [
+        "syn_isactive"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "boolean",
+      "description": "Returns true if the Roblox window is currently focused (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.mousemoverel",
+      "aliases": [
+        "syn_mousemoverel"
+      ],
+      "category": "input",
+      "parameters": "number x, number y",
+      "returns": "void",
+      "description": "Moves the mouse relative to its current position (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.mousescroll",
+      "aliases": [
+        "syn_mousescroll"
+      ],
+      "category": "input",
+      "parameters": "number pixels",
+      "returns": "void",
+      "description": "Scrolls the mouse wheel by the specified pixel amount (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.keypress",
+      "aliases": [
+        "syn_keypress"
+      ],
+      "category": "input",
+      "parameters": "number keycode",
+      "returns": "void",
+      "description": "Simulates pressing a key by its virtual keycode (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.keyrelease",
+      "aliases": [
+        "syn_keyrelease"
+      ],
+      "category": "input",
+      "parameters": "number keycode",
+      "returns": "void",
+      "description": "Simulates releasing a key by its virtual keycode (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.mouse1press",
+      "aliases": [
+        "syn_mouse1press"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates left mouse button press (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.mouse1release",
+      "aliases": [
+        "syn_mouse1release"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates left mouse button release (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.mouse1click",
+      "aliases": [
+        "syn_mouse1click"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates a full left mouse click (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.mouse2press",
+      "aliases": [
+        "syn_mouse2press"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates right mouse button press (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.mouse2release",
+      "aliases": [
+        "syn_mouse2release"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates right mouse button release (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "syn.mouse2click",
+      "aliases": [
+        "syn_mouse2click"
+      ],
+      "category": "input",
+      "parameters": "void",
+      "returns": "void",
+      "description": "Simulates a full right mouse click (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "table.islocked",
+      "aliases": [
+        "table.islock"
+      ],
+      "category": "environment",
+      "parameters": "table t",
+      "returns": "boolean",
+      "description": "Returns true if a table is locked against modifications.",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "table.lock",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "table t",
+      "returns": "void",
+      "description": "Locks a table to prevent any further modifications.",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "table.unlock",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "table t",
+      "returns": "void",
+      "description": "Unlocks a previously locked table, allowing modifications again.",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    },
+    {
+      "name": "issentinelclosure",
+      "aliases": [
+        "is_sentinel_closure"
+      ],
+      "category": "closure",
+      "parameters": "function fn",
+      "returns": "boolean",
+      "description": "Returns true if a function was created by the Sentinel executor.",
+      "verified_source": "Sentinel"
+    },
+    {
+      "name": "secure_load",
+      "aliases": [
+        "syn.secure_call"
+      ],
+      "category": "environment",
+      "parameters": "string source",
+      "returns": "void",
+      "description": "Loads and executes a script in a secure, isolated environment separate from the main executor context.",
+      "verified_source": "Sentinel"
+    },
+    {
+      "name": "secure_create",
+      "aliases": [],
+      "category": "environment",
+      "parameters": "string name, string source",
+      "returns": "function",
+      "description": "Creates a secure script with a given name and source in the secure environment.",
+      "verified_source": "Sentinel"
+    },
+    {
+      "name": "zip.inflate",
+      "aliases": [],
+      "category": "filesystem",
+      "parameters": "string data",
+      "returns": "string",
+      "description": "Decompresses ZIP/deflate-compressed data and returns the uncompressed string.",
+      "verified_source": "Krnl"
+    },
+    {
+      "name": "syn.net.websocket",
+      "aliases": [
+        "syn_net_websocket"
+      ],
+      "category": "network",
+      "parameters": "string name",
+      "returns": "userdata",
+      "description": "Opens a named WebSocket channel (Synapse namespaced).",
+      "verified_source": "Synapse X (Executor-API-Docs)"
+    }
+  ]
+}
