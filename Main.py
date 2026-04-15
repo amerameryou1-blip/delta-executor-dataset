@@ -1,11 +1,10 @@
 """
-DELTA EXECUTOR DATASET GENERATOR — 100 KEYS OPTIMIZED
-- Keys loaded ONLY from Cell 2 (GEMINI_KEY_1 to GEMINI_KEY_100)
-- Globals fetched from your GitHub URL (name + aliases)
-- Strong obfuscated filter (removes useless/minified scripts)
-- Model rotation: gemma-4-31b-it + gemini-3.1-flash for volume, gemini-2.5-pro for review only
-- RPM=15 for gemma, better timeout handling, stops exhausted keys
-- All original features kept, only slow/useless parts removed
+DELTA EXECUTOR DATASET GENERATOR — 100 KEYS + AUTO HF UPLOAD
+- Keys from Cell 2 only
+- Globals from your GitHub URL
+- Uploads every 500 samples + FORCED upload at 11.5 hours
+- Strong obfuscated filter
+- Model rotation + RPM=15 for gemma
 """
 
 import os
@@ -33,7 +32,7 @@ from datasets import Dataset, load_dataset
 TARGET_SAMPLES   = 50_000
 UPLOAD_EVERY     = 500
 KAGGLE_LIMIT_H   = 12
-SAFETY_BUFFER_M  = 35
+SAFETY_BUFFER_M  = 30          # safety margin before 12h
 
 MODEL_VOLUME = "gemma-4-31b-it"
 MODEL_FAST   = "gemini-3.1-flash"
@@ -60,7 +59,7 @@ def load_all_keys():
 API_KEYS = load_all_keys()
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
 if not HF_TOKEN:
-    print("⚠️ HF_TOKEN not set — uploads will be skipped")
+    print("⚠️ HF_TOKEN not set — automatic uploads will fail!")
 
 HF_DATASET  = "amer224/Luau"
 GLOBALS_URL = "https://raw.githubusercontent.com/amerameryou1-blip/delta-executor-dataset/refs/heads/main/delta_globals.json"
@@ -72,7 +71,7 @@ GOOD_JSONL  = OUT / "good_samples.jsonl"
 STATE_FILE  = OUT / "state.json"
 REJECTS_LOG = OUT / "rejects.log"
 
-# ====================== RATE LIMITER ======================
+# ====================== RATE LIMITER & KEY POOL ======================
 class KeyLimiter:
     def __init__(self, api_key: str, idx: int, rpm: int):
         self.key = api_key
@@ -114,7 +113,6 @@ class KeyLimiter:
             self._prune()
             return f"Key{self.idx+1}: {self._today}/1490  {len(self._win)}/{self.rpm}/min"
 
-# ====================== KEY POOL ======================
 class KeyPool:
     def __init__(self, keys: list, rpm: int):
         self.keys = [KeyLimiter(k, i, rpm) for i, k in enumerate(keys)]
@@ -184,7 +182,7 @@ def call_gemini(limiter: KeyLimiter, system_prompt: str, user_msg: str,
     print(f"   [Key {limiter.idx+1}] → Failed after {retries} attempts")
     return None
 
-# ====================== LOAD GLOBALS FROM YOUR URL ======================
+# ====================== LOAD GLOBALS ======================
 def load_globals() -> tuple[list[dict], set[str]]:
     print("📥 Fetching delta_globals.json from your GitHub URL...")
     r = requests.get(GLOBALS_URL, timeout=15)
@@ -205,25 +203,7 @@ def load_globals() -> tuple[list[dict], set[str]]:
     print(f"  ✅ Loaded {len(funcs)} Delta globals → whitelist has {len(whitelist)} entries")
     return funcs, whitelist
 
-# ====================== ORIGINAL PIPELINE ======================
-STANDARD_GLOBALS = {
-    "print","warn","error","assert","pcall","xpcall","type","typeof",
-    "pairs","ipairs","next","select","unpack","table","string","math",
-    "tostring","tonumber","rawget","rawset","rawequal","rawlen","load",
-    "setmetatable","getmetatable","require","dofile","collectgarbage",
-    "coroutine","io","os","bit32","utf8",
-    "task","wait","spawn","delay","game","workspace","script","plugin",
-    "Instance","Vector3","Vector2","Vector3int16","Vector2int16",
-    "CFrame","Color3","UDim","UDim2","Enum","Ray","Region3",
-    "TweenInfo","NumberSequence","ColorSequence","NumberRange",
-    "BrickColor","Rect","Random","DateTime","RaycastParams","OverlapParams",
-    "PhysicalProperties","Font","shared","_G","_VERSION","tick","elapsedTime",
-    "UserSettings","settings",
-    "Players","RunService","UserInputService","TweenService","HttpService",
-    "ReplicatedStorage","ServerStorage","ServerScriptService","StarterGui",
-    "StarterPack","Lighting","SoundService","MarketplaceService",
-}
-
+# ====================== OBFUSCATED FILTER (strengthened) ======================
 _OBFUSC = [
     re.compile(r'^[A-Za-z0-9+/]{300,}={0,2}$', re.M),
     re.compile(r'\\[0-9]{2,3}\\[0-9]{2,3}\\[0-9]{2,3}'),
@@ -285,11 +265,7 @@ def ast_check(code: str) -> tuple[bool, str]:
     except Exception as e:
         return False, str(e)[:300]
 
-_LUA_KEYWORDS = {
-    "if","then","else","elseif","end","while","do","for","in",
-    "repeat","until","function","local","return","break","continue",
-    "and","or","not","true","false","nil",
-}
+_LUA_KEYWORDS = {"if","then","else","elseif","end","while","do","for","in","repeat","until","function","local","return","break","continue","and","or","not","true","false","nil"}
 
 def whitelist_check(code: str, wl: set) -> tuple[bool, list[str]]:
     top = re.findall(r'(?<![.:a-zA-Z0-9_])([a-zA-Z_][a-zA-Z0-9_]*)\s*\(', code)
@@ -298,6 +274,7 @@ def whitelist_check(code: str, wl: set) -> tuple[bool, list[str]]:
     unknown = [f for f in all_calls if f not in wl and f not in _LUA_KEYWORDS and len(f) > 2]
     return len(unknown) == 0, unknown
 
+# System Prompts
 _GEN_SYS = """You are an expert Roblox executor scripter specialising in Delta executor, UNC globals, and advanced Luau.
 
 Generate ONE training sample as raw JSON — no markdown fences, no extra text:
@@ -442,7 +419,7 @@ def _hf_upload(samples: list[dict], is_final=False):
         combined = combined[[c for c in COLS if c in combined.columns]]
         ds = Dataset.from_pandas(combined, preserve_index=False)
         ds.push_to_hub(HF_DATASET, token=HF_TOKEN, commit_message=f"{label} upload — {len(combined)} rows")
-        print(f"  ✅ HuggingFace now has {len(combined)} rows")
+        print(f"  ✅ Successfully uploaded to Hugging Face! Now has {len(combined)} rows")
     except Exception as e:
         print(f"  ❌ HF upload error: {e}")
 
@@ -486,10 +463,11 @@ class State:
             open(GOOD_JSONL, "w").close()
         return buf
 
-# ====================== MAIN ======================
+# ====================== MAIN WITH FORCED 11.5 HOUR UPLOAD ======================
 def main():
     t0 = time.time()
     deadline = t0 + KAGGLE_LIMIT_H * 3600 - SAFETY_BUFFER_M * 60
+    forced_upload_time = t0 + (11.5 * 3600)   # 11.5 hours
 
     print("╔══════════════════════════════════════════╗")
     print("║  Delta Executor Dataset Generator        ║")
@@ -523,6 +501,13 @@ def main():
                 print("\n⏰ Reached safety deadline — stopping.")
                 break
 
+            # Forced upload at 11.5 hours
+            if time.time() >= forced_upload_time and len(state.upload_buf) > 0:
+                print("\n⏰ 11.5 hour mark reached — forcing final upload before Kaggle timeout")
+                buf = state.flush()
+                qc_and_upload(buf, pool, is_final=True)
+                forced_upload_time = float('inf')  # only once
+
             while len(pending) < 30 and qi < len(queue):
                 fut = ex.submit(process_entry, queue[qi], pool, whitelist, state.done_ids)
                 pending[fut] = queue[qi]
@@ -554,7 +539,7 @@ def main():
     print(f"\n🏁 Generation done: {state.total_good:,} good samples total")
     remaining = state.flush()
     if remaining:
-        print(f"📤 Final QC + upload of {len(remaining)} remaining samples...")
+        print(f"📤 Final upload of {len(remaining)} remaining samples...")
         qc_and_upload(remaining, pool, is_final=True)
 
     state.save()
