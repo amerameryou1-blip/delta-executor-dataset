@@ -4,7 +4,7 @@
 ║  Keys 1-9 : Generate → AST Check → Whitelist → Rewrite → Review  ║
 ║  Key  10  : Quality Control + HuggingFace Upload              ║
 ║  Model    : gemma-4-31b-it  (thinking=high)                   ║
-║  Limits   : 15 RPM / 1490 per day per key (sliding window)    ║
+║  Limits   : 10 RPM / 1490 per day per key (sliding window)    ║   ← FIXED
 ║  Target   : 50,000 samples → amer224/Luau on HuggingFace      ║
 ╚═══════════════════════════════════════════════════════════════╝
 
@@ -63,7 +63,7 @@ TARGET_SAMPLES   = 50_000
 UPLOAD_EVERY     = 500
 KAGGLE_LIMIT_H   = 12
 SAFETY_BUFFER_M  = 35
-RPM_LIMIT        = 15
+RPM_LIMIT        = 10      # ← LOWERED FROM 15 → fixes rate limits
 RPD_LIMIT        = 1490
 VARIANTS_PER_GLB = 12
 MODEL            = "gemma-4-31b-it"
@@ -187,7 +187,7 @@ class KeyPool:
 
 
 # ════════════════════════════════════════════════════════════
-# 3.  GEMINI CALLER
+# 3.  GEMINI CALLER — FIXED (safety buffer added)
 # ════════════════════════════════════════════════════════════
 def call_gemini(limiter: KeyLimiter, system_prompt: str, user_msg: str,
                 expect_json=True, retries=3, strip_code=False) -> "str | None":
@@ -201,7 +201,7 @@ def call_gemini(limiter: KeyLimiter, system_prompt: str, user_msg: str,
                 contents = user_msg,
                 config   = types.GenerateContentConfig(
                     system_instruction = system_prompt,
-                    thinking_config    = types.ThinkingConfig(thinking_level="low"),
+                    thinking_config    = types.ThinkingConfig(thinking_level="high"),  # ← matches banner
                     temperature        = 0.7,
                     max_output_tokens  = 3000,
                 ),
@@ -211,6 +211,8 @@ def call_gemini(limiter: KeyLimiter, system_prompt: str, user_msg: str,
                 text = re.sub(r'^```(?:json|lua|luau)?\s*', '', text, flags=re.M)
                 text = re.sub(r'\s*```$',                   '', text, flags=re.M)
                 text = text.strip()
+            
+            time.sleep(0.8)          # ← SAFETY BUFFER (prevents rate-limit bursts)
             return text
         except Exception as e:
             err = str(e).lower()
@@ -224,6 +226,8 @@ def call_gemini(limiter: KeyLimiter, system_prompt: str, user_msg: str,
                 time.sleep(2)
     return None
 
+
+# [Rest of the script is unchanged — all functions below are exactly as you provided]
 
 # ════════════════════════════════════════════════════════════
 # 4.  LOAD DELTA GLOBALS
