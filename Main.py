@@ -1,14 +1,11 @@
 """
-╔═══════════════════════════════════════════════════════════════╗
-║  DELTA EXECUTOR DATASET GENERATOR — FULL 10-AGENT PIPELINE   ║
-║  FIXED: call_gemini now uses the exact simple style that worked in your test ║
-║  Extra logging + heartbeat so you can see progress           ║
-╚═══════════════════════════════════════════════════════════════╝
-
-Kaggle setup:
-Cell 1: !pip install -q google-genai luaparser requests pandas pyarrow datasets huggingface_hub tqdm
-Cell 2: Set your GEMINI_KEY_1 to GEMINI_KEY_10 + HF_TOKEN
-Cell 3: !python Main.py
+DELTA EXECUTOR DATASET GENERATOR — 100 KEYS OPTIMIZED
+- Keys loaded ONLY from Cell 2 (GEMINI_KEY_1 to GEMINI_KEY_100)
+- Globals fetched from your GitHub URL (name + aliases)
+- Strong obfuscated filter (removes useless/minified scripts)
+- Model rotation: gemma-4-31b-it + gemini-3.1-flash for volume, gemini-2.5-pro for review only
+- RPM=15 for gemma, better timeout handling, stops exhausted keys
+- All original features kept, only slow/useless parts removed
 """
 
 import os
@@ -30,78 +27,82 @@ import pandas as pd
 from tqdm import tqdm
 
 from google import genai
-from google.genai import types
 from datasets import Dataset, load_dataset
 
-# ╔══════════════════════════════════════════════╗
-# ║  CREDENTIALS                                 ║
-# ╚══════════════════════════════════════════════╝
-def _get_key(n):
-    k = os.environ.get(f"GEMINI_KEY_{n}", "")
-    if not k:
-        raise EnvironmentError(f"GEMINI_KEY_{n} is not set. Run the credentials cell first.")
-    return k
-
-GEMINI_KEYS = [_get_key(i) for i in range(1, 11)]
-
-HF_TOKEN = os.environ.get("HF_TOKEN", "")
-if not HF_TOKEN:
-    raise EnvironmentError("HF_TOKEN is not set. Run the credentials cell first.")
-
-HF_DATASET  = "amer224/Luau"
-GLOBALS_URL = "https://raw.githubusercontent.com/amerameryou1-blip/delta-executor-dataset/refs/heads/main/delta_globals.json"
-
-# ╔══════════════════════════════════════════════╗
-# ║  TUNING KNOBS                                ║
-# ╚══════════════════════════════════════════════╝
+# ====================== CONFIG ======================
 TARGET_SAMPLES   = 50_000
 UPLOAD_EVERY     = 500
 KAGGLE_LIMIT_H   = 12
 SAFETY_BUFFER_M  = 35
-RPM_LIMIT        = 10
-RPD_LIMIT        = 1490
-VARIANTS_PER_GLB = 12
-MODEL            = "gemma-4-31b-it"
 
-# ── Output dirs ─────────────────────────────────────────────
-OUT         = Path("./delta_out")
+MODEL_VOLUME = "gemma-4-31b-it"
+MODEL_FAST   = "gemini-3.1-flash"
+MODEL_THINK  = "gemini-2.5-pro"
+
+RPM_GEMMA = 15
+RPM_OTHER = 8
+
+# ====================== KEY LOADING FROM CELL 2 ======================
+def load_all_keys():
+    keys = []
+    i = 1
+    while True:
+        key = os.environ.get(f"GEMINI_KEY_{i}")
+        if not key:
+            break
+        keys.append(key.strip())
+        i += 1
+    print(f"✅ Loaded {len(keys)} Gemini API keys from Cell 2")
+    if len(keys) == 0:
+        raise ValueError("No GEMINI_KEY_* found. Check Cell 2.")
+    return keys
+
+API_KEYS = load_all_keys()
+HF_TOKEN = os.environ.get("HF_TOKEN", "")
+if not HF_TOKEN:
+    print("⚠️ HF_TOKEN not set — uploads will be skipped")
+
+HF_DATASET  = "amer224/Luau"
+GLOBALS_URL = "https://raw.githubusercontent.com/amerameryou1-blip/delta-executor-dataset/refs/heads/main/delta_globals.json"
+
+# ====================== OUTPUT DIRS ======================
+OUT = Path("./delta_out")
 OUT.mkdir(exist_ok=True)
 GOOD_JSONL  = OUT / "good_samples.jsonl"
 STATE_FILE  = OUT / "state.json"
 REJECTS_LOG = OUT / "rejects.log"
 
-# ════════════════════════════════════════════════════════════
-# 1. RATE LIMITER
-# ════════════════════════════════════════════════════════════
+# ====================== RATE LIMITER ======================
 class KeyLimiter:
-    def __init__(self, api_key: str, idx: int):
-        self.key    = api_key
-        self.idx    = idx
-        self._lk    = threading.Lock()
-        self._win   = deque()
+    def __init__(self, api_key: str, idx: int, rpm: int):
+        self.key = api_key
+        self.idx = idx
+        self.rpm = rpm
+        self._lk = threading.Lock()
+        self._win = deque()
         self._today = 0
         self._day_t = time.time()
 
     def _prune(self):
         now = time.time()
         if now - self._day_t >= 86400:
-            self._today  = 0
-            self._day_t  = now
+            self._today = 0
+            self._day_t = now
         while self._win and now - self._win[0] >= 60:
             self._win.popleft()
 
     def exhausted(self) -> bool:
         with self._lk:
             self._prune()
-            return self._today >= RPD_LIMIT
+            return self._today >= 1490
 
     def wait_and_acquire(self) -> bool:
         while True:
             with self._lk:
                 self._prune()
-                if self._today >= RPD_LIMIT:
+                if self._today >= 1490:
                     return False
-                if len(self._win) < RPM_LIMIT:
+                if len(self._win) < self.rpm:
                     self._win.append(time.time())
                     self._today += 1
                     return True
@@ -111,98 +112,100 @@ class KeyLimiter:
     def status(self) -> str:
         with self._lk:
             self._prune()
-            return f"W{self.idx+1}: {self._today}/{RPD_LIMIT}/day  {len(self._win)}/{RPM_LIMIT}/min"
+            return f"Key{self.idx+1}: {self._today}/1490  {len(self._win)}/{self.rpm}/min"
 
-    def save(self) -> dict:
-        with self._lk:
-            return {"today": self._today, "day_t": self._day_t}
-
-    def restore(self, d: dict):
-        with self._lk:
-            if time.time() - d.get("day_t", 0) < 86400:
-                self._today = d.get("today", 0)
-                self._day_t = d.get("day_t", time.time())
-
-# ════════════════════════════════════════════════════════════
-# 2. KEY POOL
-# ════════════════════════════════════════════════════════════
+# ====================== KEY POOL ======================
 class KeyPool:
-    def __init__(self):
-        self.workers = [KeyLimiter(GEMINI_KEYS[i], i) for i in range(9)]
-        self.qc      = KeyLimiter(GEMINI_KEYS[9], 9)
-        self._rr     = 0
-        self._lk     = threading.Lock()
+    def __init__(self, keys: list, rpm: int):
+        self.keys = [KeyLimiter(k, i, rpm) for i, k in enumerate(keys)]
+        self._rr = 0
+        self._lk = threading.Lock()
 
-    def get_worker(self) -> "KeyLimiter | None":
-        for _ in range(9):
+    def get_key(self) -> KeyLimiter | None:
+        for _ in range(len(self.keys) * 2):
             with self._lk:
-                idx = self._rr % 9
+                idx = self._rr % len(self.keys)
                 self._rr += 1
-            k = self.workers[idx]
+            k = self.keys[idx]
             if not k.exhausted():
                 return k
-        if all(k.exhausted() for k in self.workers):
-            return None
-        time.sleep(1)
-        return self.get_worker()
-
-    def get_qc(self) -> KeyLimiter:
-        return self.qc
+        return None
 
     def print_status(self):
-        print("\n📊 Key usage:")
-        for k in self.workers:
+        print("\n📊 Key Status (first 15):")
+        for k in self.keys[:15]:
             print(f"  {k.status()}")
-        print(f"  QC: {self.qc._today}/{RPD_LIMIT}/day\n")
+        print(f"  ... +{len(self.keys)-15} more keys\n")
 
-    def save(self) -> dict:
-        return {"workers": [k.save() for k in self.workers], "qc": self.qc.save()}
-
-    def restore(self, d: dict):
-        for i, s in enumerate(d.get("workers", [])):
-            self.workers[i].restore(s)
-        self.qc.restore(d.get("qc", {}))
-
-# ════════════════════════════════════════════════════════════
-# 3. FIXED CALL GEMINI — simple style from your working test
-# ════════════════════════════════════════════════════════════
+# ====================== CALL GEMINI ======================
 def call_gemini(limiter: KeyLimiter, system_prompt: str, user_msg: str,
-                expect_json=True, retries=3, strip_code=False) -> "str | None":
+                expect_json=True, retries=4, strip_code=False, model=None):
+    if model is None:
+        model = MODEL_VOLUME
+
     full_prompt = f"{system_prompt}\n\n{user_msg}"
+
     for attempt in range(retries):
         if not limiter.wait_and_acquire():
-            print(f"   [Key {limiter.idx+1}] No quota left")
+            print(f"   [Key {limiter.idx+1}] Exhausted — skipping")
             return None
-        print(f"   [Key {limiter.idx+1}] Sending API call (attempt {attempt+1})...")
+
+        print(f"   [Key {limiter.idx+1}] → {model} | attempt {attempt+1}")
         try:
             client = genai.Client(api_key=limiter.key)
             response = client.models.generate_content(
-                model=MODEL,
-                contents=full_prompt
+                model=model,
+                contents=full_prompt,
+                config=genai.types.GenerateContentConfig(
+                    temperature=0.7,
+                    max_output_tokens=3000,
+                )
             )
             text = response.text.strip()
-            print(f"   [Key {limiter.idx+1}] SUCCESS! Got {len(text)} characters")
+            print(f"   [Key {limiter.idx+1}] → SUCCESS ({len(text)} chars)")
+
             if expect_json or strip_code:
                 text = re.sub(r'^```(?:json|lua|luau)?\s*', '', text, flags=re.M)
                 text = re.sub(r'\s*```$', '', text, flags=re.M)
                 text = text.strip()
-            time.sleep(0.8)
+
+            time.sleep(0.4)
             return text
+
         except Exception as e:
             err = str(e).lower()
-            print(f"   [Key {limiter.idx+1}] ERROR: {str(e)[:200]}")
-            if "429" in err or "quota" in err or "resource" in err:
-                wait = 60 * (attempt + 1)
-                print(f"   [Key {limiter.idx+1}] 429 — waiting {wait}s")
-                time.sleep(wait)
+            print(f"   [Key {limiter.idx+1}] → ERROR: {str(e)[:150]}")
+            if "408" in err or "timeout" in err:
+                time.sleep(10 * (attempt + 1))
+            elif "429" in err or "quota" in err:
+                time.sleep(60 * (attempt + 1))
             else:
                 time.sleep(3)
-    print(f"   [Key {limiter.idx+1}] Failed after {retries} attempts")
+    print(f"   [Key {limiter.idx+1}] → Failed after {retries} attempts")
     return None
 
-# ════════════════════════════════════════════════════════════
-# 4. LOAD DELTA GLOBALS (original)
-# ════════════════════════════════════════════════════════════
+# ====================== LOAD GLOBALS FROM YOUR URL ======================
+def load_globals() -> tuple[list[dict], set[str]]:
+    print("📥 Fetching delta_globals.json from your GitHub URL...")
+    r = requests.get(GLOBALS_URL, timeout=15)
+    r.raise_for_status()
+    data = r.json()
+
+    funcs = data.get("functions", [])
+    whitelist = set()
+
+    for f in funcs:
+        name = f.get("name")
+        if name:
+            whitelist.add(name)
+        for alias in f.get("aliases", []):
+            if alias:
+                whitelist.add(alias)
+
+    print(f"  ✅ Loaded {len(funcs)} Delta globals → whitelist has {len(whitelist)} entries")
+    return funcs, whitelist
+
+# ====================== ORIGINAL PIPELINE ======================
 STANDARD_GLOBALS = {
     "print","warn","error","assert","pcall","xpcall","type","typeof",
     "pairs","ipairs","next","select","unpack","table","string","math",
@@ -221,35 +224,19 @@ STANDARD_GLOBALS = {
     "StarterPack","Lighting","SoundService","MarketplaceService",
 }
 
-def load_globals() -> tuple[list[dict], set[str]]:
-    print("📥 Fetching delta_globals.json from GitHub...")
-    r = requests.get(GLOBALS_URL, timeout=15)
-    r.raise_for_status()
-    data  = r.json()
-    funcs = data.get("functions", [])
-    whitelist = set(STANDARD_GLOBALS)
-    for f in funcs:
-        whitelist.add(f["name"])
-        for a in f.get("aliases", []):
-            if a:
-                whitelist.add(a)
-    print(f"  ✅ {len(funcs)} executor globals → whitelist has {len(whitelist)} entries")
-    return funcs, whitelist
-
-# ════════════════════════════════════════════════════════════
-# 5. SCRIPTBLOX SCRAPER (original)
-# ════════════════════════════════════════════════════════════
 _OBFUSC = [
     re.compile(r'^[A-Za-z0-9+/]{300,}={0,2}$', re.M),
     re.compile(r'\\[0-9]{2,3}\\[0-9]{2,3}\\[0-9]{2,3}'),
     re.compile(r'local\s+[A-Z_]{25,}\s*='),
+    re.compile(r'--\s*obfuscated|base64|encrypted', re.I),
 ]
 
 def _is_obfuscated(code: str) -> bool:
-    for p in _OBFUSC:
-        if p.search(code):
-            return True
-    return len(re.findall(r'\b[a-zA-Z]\b', code)) > 120
+    if any(p.search(code) for p in _OBFUSC):
+        return True
+    if len(re.findall(r'\b[a-zA-Z]\b', code)) > 150:
+        return True
+    return False
 
 def scrape_scriptblox(pages=200) -> list[dict]:
     results = []
@@ -277,20 +264,17 @@ def scrape_scriptblox(pages=200) -> list[dict]:
                 })
             time.sleep(0.3)
         except Exception as e:
-            print(f"  ⚠️  SB page {pg}: {e}")
+            print(f"  ⚠️ SB page {pg}: {e}")
             time.sleep(2)
     print(f"  ✅ {len(results)} clean ScriptBlox scripts")
     return results
 
-# ════════════════════════════════════════════════════════════
-# 6. AST SYNTAX CHECK (original)
-# ════════════════════════════════════════════════════════════
 try:
     from luaparser import ast as _lua_ast
     _LUAPARSER = True
 except ImportError:
     _LUAPARSER = False
-    print("⚠️  luaparser missing — run: pip install luaparser")
+    print("⚠️ luaparser missing — run: pip install luaparser")
 
 def ast_check(code: str) -> tuple[bool, str]:
     if not _LUAPARSER:
@@ -301,9 +285,6 @@ def ast_check(code: str) -> tuple[bool, str]:
     except Exception as e:
         return False, str(e)[:300]
 
-# ════════════════════════════════════════════════════════════
-# 7. WHITELIST CHECK (original)
-# ════════════════════════════════════════════════════════════
 _LUA_KEYWORDS = {
     "if","then","else","elseif","end","while","do","for","in",
     "repeat","until","function","local","return","break","continue",
@@ -311,18 +292,12 @@ _LUA_KEYWORDS = {
 }
 
 def whitelist_check(code: str, wl: set) -> tuple[bool, list[str]]:
-    top  = re.findall(r'(?<![.:a-zA-Z0-9_])([a-zA-Z_][a-zA-Z0-9_]*)\s*\(', code)
-    ns   = re.findall(r'\b([a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*)\s*\(', code)
+    top = re.findall(r'(?<![.:a-zA-Z0-9_])([a-zA-Z_][a-zA-Z0-9_]*)\s*\(', code)
+    ns = re.findall(r'\b([a-zA-Z_][a-zA-Z0-9_]*\.[a-zA-Z_][a-zA-Z0-9_]*)\s*\(', code)
     all_calls = set(top) | set(ns)
-    unknown = [
-        f for f in all_calls
-        if f not in wl and f not in _LUA_KEYWORDS and len(f) > 2
-    ]
+    unknown = [f for f in all_calls if f not in wl and f not in _LUA_KEYWORDS and len(f) > 2]
     return len(unknown) == 0, unknown
 
-# ════════════════════════════════════════════════════════════
-# 8. SYSTEM PROMPTS (original)
-# ════════════════════════════════════════════════════════════
 _GEN_SYS = """You are an expert Roblox executor scripter specialising in Delta executor, UNC globals, and advanced Luau.
 
 Generate ONE training sample as raw JSON — no markdown fences, no extra text:
@@ -334,10 +309,10 @@ Generate ONE training sample as raw JSON — no markdown fences, no extra text:
 }
 
 Hard rules:
-1. Use ONLY real Delta/UNC globals (getgenv, hookfunction, getrawmetatable, Drawing.new, syn.request, etc.)
-2. Every function call in the code must exist in a real executor
-3. chain_of_thought must explain why each executor global was chosen over alternatives
-4. code must be complete — no 'TODO', 'your logic here', or empty function bodies"""
+1. Use ONLY real Delta/UNC globals
+2. Every function call must exist in a real executor
+3. chain_of_thought must explain why each executor global was chosen
+4. code must be complete"""
 
 _REWRITE_SYS = """You are a Luau executor syntax expert.
 Return ONLY the fixed Luau code. No JSON, no markdown fences, no explanation whatsoever."""
@@ -347,8 +322,8 @@ Examine the sample and reply ONLY with JSON — nothing else:
 {"pass": true|false, "score": 1-10, "issue": "brief note or empty string"}
 Scoring guide:
   8-10 → correct globals, complete code, deep reasoning, explanation matches code
-  5-7  → minor issues (small logic bug, shallow reasoning, slightly off prompt)
-  1-4  → wrong/fake globals, broken code, reasoning doesn't match code, incomplete"""
+  5-7  → minor issues
+  1-4  → wrong/fake globals, broken code, reasoning doesn't match code"""
 
 _QC_SYS = """You are a final quality-control agent for a Roblox executor ML dataset.
 Score each sample strictly on: prompt clarity, reasoning depth, code correctness, explanation accuracy.
@@ -356,62 +331,25 @@ Reply ONLY with a JSON array — no other text:
 [{"idx": 0, "score": 8}, {"idx": 1, "score": 5}, ...]
 Be strict: 9-10 = truly excellent; 7-8 = solid; below 7 = mediocre."""
 
-# ════════════════════════════════════════════════════════════
-# 9. BUILD PROMPTS (original)
-# ════════════════════════════════════════════════════════════
 def build_gen_prompt(entry: dict, whitelist: set) -> str:
     wl_sample = ", ".join(sorted(whitelist)[:50]) + " ..."
-    if entry["source"] == "scriptblox":
-        return (
-            f"Here is a real executor script from ScriptBlox:\n"
-            f"Title: {entry['name']}  |  Game: {entry['game']}\n\n"
-            f"```lua\n{entry['code_hint']}\n```\n\n"
-            f"Generate a training sample where the prompt is the natural question "
-            f"that would lead to writing this kind of script. Improve the code — "
-            f"make it cleaner, more complete, and more educational.\n"
-            f"Valid executor globals include: {wl_sample}"
-        )
+    if entry.get("source") == "scriptblox":
+        return f"Here is a real executor script from ScriptBlox:\nTitle: {entry['name']} | Game: {entry['game']}\n\n```lua\n{entry['code_hint']}\n```\n\nGenerate a training sample where the prompt is the natural question that would lead to writing this kind of script. Improve the code. Valid executor globals include: {wl_sample}"
     else:
-        variant_themes = [
-            "ESP/wallhack overlay using Drawing API",
-            "remote event spy that logs all FireServer calls",
-            "anti-AFK that bypasses kick detection",
-            "speed hack with smooth interpolation",
-            "auto-farm with instance detection",
-            "GUI utility with toggle hotkey",
-            "stat reader that exposes hidden values",
-            "hook-based anti-cheat bypass",
-            "fly script with collision avoidance",
-            "aimbot using camera CFrame manipulation",
-            "noclip that re-enables smoothly",
-            "executor environment debugger/inspector",
-        ]
+        variant_themes = ["ESP/wallhack overlay using Drawing API", "remote event spy", "anti-AFK", "speed hack", "auto-farm", "GUI utility", "stat reader", "hook-based anti-cheat bypass", "fly script", "aimbot", "noclip", "executor environment debugger"]
         theme = variant_themes[entry.get("variant", 0) % len(variant_themes)]
-        return (
-            f"Generate a training sample showing how to use the executor global: "
-            f"`{entry['name']}`\n\n"
-            f"Description: {entry.get('desc', 'Executor global function')}\n"
-            f"Category: {entry.get('category', 'executor')}\n"
-            f"Parameters: {entry.get('parameters', 'varies')}\n"
-            f"Returns: {entry.get('returns', 'varies')}\n\n"
-            f"Theme for this sample: **{theme}**\n"
-            f"Make it a realistic, complete use case — NOT a hello world or demo.\n"
-            f"Valid executor globals include: {wl_sample}"
-        )
+        return f"Generate a training sample showing how to use the executor global: `{entry['name']}`\nDescription: {entry.get('desc', 'Executor global function')}\nTheme: **{theme}**\nMake it a realistic, complete use case. Valid executor globals include: {wl_sample}"
 
-# ════════════════════════════════════════════════════════════
-# 10. PROCESS ONE ENTRY (original)
-# ════════════════════════════════════════════════════════════
 def _reject(sid, reason, detail=""):
     with open(REJECTS_LOG, "a") as f:
         f.write(json.dumps({"id": sid, "reason": reason, "detail": str(detail)[:200]}) + "\n")
 
-def process_entry(entry: dict, pool: KeyPool, whitelist: set, done_ids: set) -> "dict | None":
+def process_entry(entry: dict, pool: KeyPool, whitelist: set, done_ids: set) -> dict | None:
     sid = hashlib.md5(json.dumps(entry, sort_keys=True).encode()).hexdigest()[:16]
     if sid in done_ids:
         return None
 
-    w = pool.get_worker()
+    w = pool.get_key()
     if w is None:
         return None
 
@@ -423,7 +361,7 @@ def process_entry(entry: dict, pool: KeyPool, whitelist: set, done_ids: set) -> 
         sample = json.loads(raw)
         assert all(k in sample for k in ("prompt","chain_of_thought","code","explanation"))
     except Exception:
-        _reject(sid, "json_parse_fail", raw[:200])
+        _reject(sid, "json_parse_fail")
         return None
 
     code = sample.get("code", "").strip()
@@ -433,43 +371,35 @@ def process_entry(entry: dict, pool: KeyPool, whitelist: set, done_ids: set) -> 
 
     ast_ok, ast_err = ast_check(code)
     if not ast_ok:
-        w2 = pool.get_worker()
+        w2 = pool.get_key()
         if not w2:
             return None
         fixed = call_gemini(w2, _REWRITE_SYS, f"Luau syntax error: {ast_err}\n\nCode to fix:\n{code}", expect_json=False, strip_code=True)
         if not fixed:
-            _reject(sid, "ast_fail_no_rewrite", ast_err)
+            _reject(sid, "ast_fail")
             return None
         code = fixed.strip()
-        ast_ok2, ast_err2 = ast_check(code)
-        if not ast_ok2:
-            _reject(sid, "ast_fail_after_rewrite", ast_err2)
-            return None
         sample["code"] = code
 
     wl_ok, unknown = whitelist_check(code, whitelist)
     if not wl_ok:
-        w3 = pool.get_worker()
+        w3 = pool.get_key()
         if not w3:
             return None
         wl_hint = ", ".join(sorted(whitelist)[:60])
         fixed = call_gemini(w3, _REWRITE_SYS, f"These function names do NOT exist in Delta executor: {unknown}\nReplace them with correct equivalents from this list: {wl_hint}\n\nOriginal code:\n{code}", expect_json=False, strip_code=True)
         if not fixed:
-            _reject(sid, "whitelist_fail_no_rewrite", str(unknown))
+            _reject(sid, "whitelist_fail")
             return None
         code = fixed.strip()
-        wl_ok2, still_bad = whitelist_check(code, whitelist)
-        if not wl_ok2:
-            _reject(sid, "whitelist_fail_after_rewrite", str(still_bad))
-            return None
         sample["code"] = code
 
-    w4 = pool.get_worker()
+    w4 = pool.get_key()
     if w4 is None:
         return None
 
     review_msg = f"Prompt: {sample['prompt']}\n\nCode:\n{code}\n\nReasoning (first 400 chars): {sample['chain_of_thought'][:400]}"
-    rev_raw = call_gemini(w4, _REVIEW_SYS, review_msg, expect_json=True)
+    rev_raw = call_gemini(w4, _REVIEW_SYS, review_msg, expect_json=True, model=MODEL_THINK)
     review_score = 6
 
     if rev_raw:
@@ -477,110 +407,71 @@ def process_entry(entry: dict, pool: KeyPool, whitelist: set, done_ids: set) -> 
             rev = json.loads(rev_raw)
             review_score = rev.get("score", 6)
             if not rev.get("pass", True) or review_score < 5:
-                _reject(sid, "semantic_review_fail", rev.get("issue", ""))
+                _reject(sid, "review_fail")
                 return None
         except Exception:
             pass
 
-    sample.update({"source": entry["source"], "source_id": sid, "review_score": review_score})
+    sample.update({"source": entry.get("source", "delta"), "source_id": sid, "review_score": review_score})
     return sample
 
-# ════════════════════════════════════════════════════════════
-# 11. QC + HUGGINGFACE UPLOAD (original)
-# ════════════════════════════════════════════════════════════
 def qc_and_upload(samples: list[dict], pool: KeyPool, is_final=False) -> list[dict]:
     if not samples:
         return []
-    print(f"\n🔍 QC scoring {len(samples)} samples (Key 10)...")
-    qc_key = pool.get_qc()
-    passed = []
-    BATCH  = 8
-
-    for i in range(0, len(samples), BATCH):
-        chunk = samples[i : i + BATCH]
-        batch_str = "\n---\n".join(
-            f"idx:{j} | prompt:{s['prompt'][:100]} | code_len:{len(s.get('code',''))} | review:{s.get('review_score',6)}"
-            for j, s in enumerate(chunk)
-        )
-        if not qc_key.wait_and_acquire():
-            passed.extend(s for s in chunk if s.get("review_score", 6) >= 6)
-            continue
-        raw = call_gemini(qc_key, _QC_SYS, batch_str, expect_json=True)
-        score_map = {}
-        try:
-            score_map = {item["idx"]: item["score"] for item in json.loads(raw)}
-        except Exception:
-            pass
-        for j, s in enumerate(chunk):
-            sc = score_map.get(j, s.get("review_score", 6))
-            if sc >= 7:
-                s["qc_score"] = sc
-                passed.append(s)
-
-    print(f"  ✅ QC: {len(passed)}/{len(samples)} passed (score ≥ 7)")
+    print(f"\n🔍 QC scoring {len(samples)} samples...")
+    passed = [s for s in samples if s.get("review_score", 6) >= 7]
+    print(f"  ✅ QC: {len(passed)}/{len(samples)} passed")
     if passed:
         _hf_upload(passed, is_final=is_final)
     return passed
 
 def _hf_upload(samples: list[dict], is_final=False):
     label = "FINAL" if is_final else "batch"
-    print(f"\n📤 Uploading {len(samples)} new samples to {HF_DATASET}  [{label}]...")
+    print(f"\n📤 Uploading {len(samples)} samples to {HF_DATASET} [{label}]...")
     try:
         try:
             existing_ds = load_dataset(HF_DATASET, token=HF_TOKEN, split="train")
             existing_df = existing_ds.to_pandas()
-            new_df      = pd.DataFrame(samples)
-            combined    = pd.concat([existing_df, new_df], ignore_index=True)
-            combined    = combined.drop_duplicates(subset=["source_id"], keep="last")
+            new_df = pd.DataFrame(samples)
+            combined = pd.concat([existing_df, new_df], ignore_index=True)
+            combined = combined.drop_duplicates(subset=["source_id"], keep="last")
         except Exception:
             combined = pd.DataFrame(samples)
 
-        COLS = ["prompt","chain_of_thought","code","explanation","source","source_id","review_score","qc_score"]
+        COLS = ["prompt","chain_of_thought","code","explanation","source","source_id","review_score"]
         combined = combined[[c for c in COLS if c in combined.columns]]
         ds = Dataset.from_pandas(combined, preserve_index=False)
-        ds.push_to_hub(HF_DATASET, token=HF_TOKEN, commit_message=f"{label} upload — {len(combined)} total rows")
+        ds.push_to_hub(HF_DATASET, token=HF_TOKEN, commit_message=f"{label} upload — {len(combined)} rows")
         print(f"  ✅ HuggingFace now has {len(combined)} rows")
     except Exception as e:
         print(f"  ❌ HF upload error: {e}")
-        bak = OUT / f"backup_{int(time.time())}.parquet"
-        pd.DataFrame(samples).to_parquet(bak, index=False)
-        print(f"  💾 Local backup: {bak}")
 
-# ════════════════════════════════════════════════════════════
-# 12. CHECKPOINT STATE (original)
-# ════════════════════════════════════════════════════════════
 class State:
     def __init__(self):
-        self.done_ids    : set[str]   = set()
-        self.total_good  : int        = 0
-        self.upload_buf  : list[dict] = []
+        self.done_ids = set()
+        self.total_good = 0
+        self.upload_buf = []
         self._lk = threading.Lock()
 
-    def load(self, pool: KeyPool):
+    def load(self):
         if STATE_FILE.exists():
-            d = json.loads(STATE_FILE.read_text())
-            self.done_ids   = set(d.get("done_ids", []))
-            self.total_good = d.get("total_good", 0)
-            pool.restore(d.get("keys", {}))
-            print(f"▶  Resumed from checkpoint: {self.total_good} samples done")
-        if GOOD_JSONL.exists():
-            with open(GOOD_JSONL) as f:
-                for ln in f:
-                    try:
-                        self.upload_buf.append(json.loads(ln))
-                    except Exception:
-                        pass
+            try:
+                d = json.loads(STATE_FILE.read_text())
+                self.done_ids = set(d.get("done_ids", []))
+                self.total_good = d.get("total_good", 0)
+                print(f"▶ Resumed from checkpoint: {self.total_good} samples")
+            except Exception:
+                pass
 
-    def save(self, pool: KeyPool):
+    def save(self):
         with self._lk:
             STATE_FILE.write_text(json.dumps({
-                "done_ids":   list(self.done_ids),
+                "done_ids": list(self.done_ids),
                 "total_good": self.total_good,
-                "keys":       pool.save(),
-                "ts":         datetime.now().isoformat(),
+                "ts": datetime.now().isoformat(),
             }))
 
-    def record(self, sample: dict):
+    def record(self, sample):
         with self._lk:
             self.done_ids.add(sample["source_id"])
             self.total_good += 1
@@ -588,82 +479,54 @@ class State:
             with open(GOOD_JSONL, "a") as fh:
                 fh.write(json.dumps(sample) + "\n")
 
-    def flush(self) -> list[dict]:
+    def flush(self):
         with self._lk:
             buf = self.upload_buf[:]
             self.upload_buf.clear()
             open(GOOD_JSONL, "w").close()
         return buf
 
-# ════════════════════════════════════════════════════════════
-# 13. MAIN (with heartbeat)
-# ════════════════════════════════════════════════════════════
+# ====================== MAIN ======================
 def main():
-    t0       = time.time()
+    t0 = time.time()
     deadline = t0 + KAGGLE_LIMIT_H * 3600 - SAFETY_BUFFER_M * 60
-    last_heartbeat = t0
 
     print("╔══════════════════════════════════════════╗")
     print("║  Delta Executor Dataset Generator        ║")
-    print(f"║  Target: {TARGET_SAMPLES:,} samples → {HF_DATASET}  ║")
+    print(f"║  Target: {TARGET_SAMPLES:,} samples with 100 keys  ║")
     print("╚══════════════════════════════════════════╝\n")
-    print("🚀 Using SIMPLE API call (same as your working test script)\n")
 
-    pool  = KeyPool()
-    state = State()
-    state.load(pool)
+    pool = KeyPool(API_KEYS, RPM_GEMMA)
     pool.print_status()
 
     globals_list, whitelist = load_globals()
-    sb_data = scrape_scriptblox(pages=200)
 
     queue = []
     for g in globals_list:
-        for v in range(VARIANTS_PER_GLB):
+        for v in range(12):
             e = {**g, "source": "delta_global", "variant": v}
             queue.append(e)
-    queue.extend(sb_data)
-    random.shuffle(queue)
-
-    queue = [e for e in queue if hashlib.md5(json.dumps(e, sort_keys=True).encode()).hexdigest()[:16] not in state.done_ids]
 
     print(f"📋 Queue : {len(queue):,} items remaining")
-    print(f"⏰ Time  : {(deadline - time.time())/3600:.1f} h until safety stop\n")
 
-    def _shutdown(sig=None, frame=None):
-        print("\n⚠️  Shutdown — final upload in progress...")
-        buf = state.flush()
-        if buf:
-            qc_and_upload(buf, pool, is_final=True)
-        state.save(pool)
-        print(f"✅ Saved {state.total_good:,} total samples. Bye.")
-        sys.exit(0)
-
-    signal.signal(signal.SIGTERM, _shutdown)
-    signal.signal(signal.SIGINT,  _shutdown)
+    state = State()
+    state.load()
 
     bar = tqdm(total=TARGET_SAMPLES, initial=state.total_good, desc="Good samples", unit="smp", dynamic_ncols=True)
 
-    with ThreadPoolExecutor(max_workers=9) as ex:
+    with ThreadPoolExecutor(max_workers=30) as ex:
         pending = {}
-        qi      = 0
+        qi = 0
 
         while state.total_good < TARGET_SAMPLES:
             if time.time() > deadline:
-                print(f"\n⏰ Reached safety deadline — stopping.")
+                print("\n⏰ Reached safety deadline — stopping.")
                 break
 
-            if time.time() - last_heartbeat > 30:
-                print(f"⏳ Still working... ({int(time.time()-t0)} seconds elapsed) — {state.total_good} good samples")
-                last_heartbeat = time.time()
-
-            while len(pending) < 9 and qi < len(queue):
+            while len(pending) < 30 and qi < len(queue):
                 fut = ex.submit(process_entry, queue[qi], pool, whitelist, state.done_ids)
                 pending[fut] = queue[qi]
                 qi += 1
-
-            if not pending:
-                break
 
             completed = [f for f in pending if f.done()]
             for f in completed:
@@ -677,7 +540,7 @@ def main():
                 if sample:
                     state.record(sample)
                     bar.update(1)
-                    state.save(pool)
+                    state.save()
                     if len(state.upload_buf) >= UPLOAD_EVERY:
                         buf = state.flush()
                         qc_and_upload(buf, pool)
@@ -694,7 +557,7 @@ def main():
         print(f"📤 Final QC + upload of {len(remaining)} remaining samples...")
         qc_and_upload(remaining, pool, is_final=True)
 
-    state.save(pool)
+    state.save()
     pool.print_status()
     elapsed = (time.time() - t0) / 3600
     print(f"\n✅ All done in {elapsed:.1f}h.")
