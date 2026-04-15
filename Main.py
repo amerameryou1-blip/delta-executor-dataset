@@ -201,7 +201,7 @@ def call_gemini(limiter: KeyLimiter, system_prompt: str, user_msg: str,
                 contents = user_msg,
                 config   = types.GenerateContentConfig(
                     system_instruction = system_prompt,
-                    thinking_config    = types.ThinkingConfig(thinking_budget=8192),
+                    thinking_config    = types.ThinkingConfig(thinking_level="low"),
                     temperature        = 0.7,
                     max_output_tokens  = 3000,
                 ),
